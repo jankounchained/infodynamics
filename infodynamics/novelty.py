@@ -110,8 +110,6 @@ class Novelty:
         return lm
 
     def fit(self, X, slice_w=False):
-        self._calc_novelty(X)
-        self._calc_transience(X)
         self._calc_resonance(X)
 
         if slice_w:
