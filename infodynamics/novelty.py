@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
 
-from infodynamics.entropies.factory import metric_factory
+from infodynamics.measures.factory import metric_factory
 
 
 class Novelty:
