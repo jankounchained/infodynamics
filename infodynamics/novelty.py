@@ -9,9 +9,15 @@ from infodynamics.measures.factory import metric_factory
 
 
 class Novelty:
-    def __init__(self, window, metric, custom_metric=None, placeholder_constant=0) -> None:
-        self.metric = metric_factory(metric_name=metric)
+    def __init__(self, window, metric='jsd', custom_metric=None, placeholder_constant=0) -> None:
         self.window = window
+        self.metric = metric_factory(metric_name=metric)
+
+        if custom_metric:
+            # check if custom_metric is a function
+            assert hasattr(custom_metric, '__call__')
+            self.metric = custom_metric
+
         self.placeholder_constant = placeholder_constant
 
     def _calc_novelty(self, X):
