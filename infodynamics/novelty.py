@@ -1,10 +1,6 @@
 '''
 Driver
 '''
-# %%
-import sys
-sys.path.append('../')
-
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
@@ -116,36 +112,3 @@ class Novelty:
             self.slice_zeros()
         
         return self
-
-    def transform(self, X):
-        pass
-
-    def fit_transform():
-        pass
-
-# # %%
-# # test data
-
-# px = np.array([0.2, 0.6, 0, 0.2])
-# qx = np.array([0, 0.8, 0.1, 0.1])
-
-# X = np.load('test_data.npy')
-
-# # %%
-# id = Novelty(window=2, metric="kld")
-# id.fit(X)
-
-# # %%
-# a = id._calc_novelty_effectiveness()
-
-# # %%
-# kld = metric_factory('kld')
-# # %%
-# kld(X[0], X[1])
-
-# # %%
-# px_zero = np.array([0.2, 0.8, 0])
-# qx_non_zero = np.array([1, 0, 0])
-
-# kld(px_zero, qx_non_zero)
-# # %%
