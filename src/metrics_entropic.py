@@ -25,8 +25,8 @@ def js_div(p, q):
     """
     Jensen-Shannon divergence between two discrete distributions.
     """
-    p = p / np.sum(p, keepdims=True)
-    q = q / np.sum(q, keepdims=True)
+    p = p / np.sum(p, axis=-1, keepdims=True)
+    q = q / np.sum(q, axis=-1, keepdims=True)
     m = (p + q) / 2.0
     return 0.5 * kl_div(p, m) + 0.5 * kl_div(q, m)
 
