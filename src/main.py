@@ -1,9 +1,6 @@
 """
 Class for estimation of information dynamics of time-dependent probabilistic document representations.
 
-TODO
-- there could be a generalizable rolling average function that could be used for novelty, transience and jump entorpy
-
 Removed functionality:
 - sorting
 - normalization
@@ -225,12 +222,3 @@ class InfoDynamics:
         """
         self.fit(X)
         return self.transform(X)
-
-
-    # def slice_zeros(self):
-    #     self.nsignal = self.nsignal[self.window:-self.window]
-    #     self.nsigma = self.nsigma[self.window:-self.window]
-    #     self.tsignal = self.tsignal[self.window:-self.window]
-    #     self.tsigma = self.tsigma[self.window:-self.window]
-    #     self.rsignal = self.rsignal[self.window:-self.window]
-    #     self.rsigma = self.rsigma[self.window:-self.window]
