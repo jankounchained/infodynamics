@@ -59,50 +59,6 @@ class InfoDynamics:
         else:
             return np.mean(tmp), np.std(tmp)
 
-    def _calculate_novelty(self, X: ArrayLike) -> Tuple[np.ndarray, np.ndarray]:
-        ts_len = X.shape[0]
-
-        N_hat = np.empty(ts_len)
-        N_sd = np.empty(ts_len)
-
-        for i, x in enumerate(X):
-            # select {window} elements before i, or empty array
-            submat = X[max(0, i - self.window) : i,]
-
-            if submat.shape[0] == self.window:
-                # use broadcasting to calculate js_dist for all elements in submat
-                tmp = self.measure(x, submat)
-                # skip the first comparison (x with itself)
-                tmp = tmp[1:]
-            else:
-                tmp = np.full([self.window - 1], self.inplace_constant)
-
-            N_hat[i], N_sd[i] = self._summarize_tmp(tmp)
-
-        return N_hat, N_sd
-
-    def _calculate_transience(self, X: ArrayLike) -> Tuple[np.ndarray, np.ndarray]:
-        ts_len = X.shape[0]
-
-        T_hat = np.empty(ts_len)
-        T_sd = np.empty(ts_len)
-
-        for i, x in enumerate(X):
-            # select {window} elements after i, or empty array
-            submat = X[i : max(ts_len + 1, i + self.window + 1),]
-
-            if submat.shape[0] == self.window:
-                # use broadcasting to calculate js_dist for all elements in submat
-                tmp = self.measure(x, submat)
-                # skip the first comparison (x with itself)
-                tmp = tmp[1:]
-            else:
-                tmp = np.full([self.window - 1], self.inplace_constant)
-
-            T_hat[i], T_sd[i] = self._summarize_tmp(tmp)
-
-        return T_hat, T_sd
-
     def calc_signal(
         self, X: ArrayLike, relative_to="past"
     ) -> Tuple[np.ndarray, np.ndarray]:
