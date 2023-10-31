@@ -17,7 +17,14 @@ from pandas import DataFrame
 
 
 class InfoDynamics:
-    def __init__(self, measure: Callable, window_size: int, jump_size: int, inplace_constant: Optional[Union[int, float]] = 0, averaging_weigts: Optional[ArrayLike] = None):
+    def __init__(
+        self,
+        measure: Callable,
+        window_size: int,
+        jump_size: int = 0,
+        inplace_constant: Optional[Union[int, float]] = 0,
+        averaging_weigts: Optional[ArrayLike] = None,
+    ):
         """
 
         Parameters
@@ -34,7 +41,7 @@ class InfoDynamics:
         inplace_constant : Optional[Union[int, float]]
             constant number that gets added to the signal at the beginning and end of the time series.
             0 by default.
-        
+
         averaging_weigts : Optional[np.Array]
             Weights for averaging novelty and transience.
             Can be used to give more weight to more recent observations.
@@ -47,15 +54,13 @@ class InfoDynamics:
         self.averaging_weigts = averaging_weigts
 
     def _summarize_tmp(self, tmp: ArrayLike) -> np.ndarray:
-        """
-        """
+        """ """
         if self.averaging_weigts is not None:
             return np.average(tmp, weights=self.averaging_weigts, axis=0), np.std(tmp)
         else:
             return np.mean(tmp), np.std(tmp)
 
     def _calculate_novelty(self, X: ArrayLike) -> Tuple[np.ndarray, np.ndarray]:
-
         ts_len = X.shape[0]
 
         N_hat = np.empty(ts_len)
@@ -63,8 +68,8 @@ class InfoDynamics:
 
         for i, x in enumerate(X):
             # select {window} elements before i, or empty array
-            submat = X[max(0, i - self.window):i, ]
-            
+            submat = X[max(0, i - self.window) : i,]
+
             if submat.shape[0] == self.window:
                 # use broadcasting to calculate js_dist for all elements in submat
                 tmp = self.measure(x, submat)
@@ -78,7 +83,6 @@ class InfoDynamics:
         return N_hat, N_sd
 
     def _calculate_transience(self, X: ArrayLike) -> Tuple[np.ndarray, np.ndarray]:
-
         ts_len = X.shape[0]
 
         T_hat = np.empty(ts_len)
@@ -86,8 +90,8 @@ class InfoDynamics:
 
         for i, x in enumerate(X):
             # select {window} elements after i, or empty array
-            submat = X[i : max(ts_len + 1, i + self.window + 1), ]
-            
+            submat = X[i : max(ts_len + 1, i + self.window + 1),]
+
             if submat.shape[0] == self.window:
                 # use broadcasting to calculate js_dist for all elements in submat
                 tmp = self.measure(x, submat)
@@ -100,11 +104,13 @@ class InfoDynamics:
 
         return T_hat, T_sd
 
-    def calc_signal(self, X: ArrayLike, direction='past') -> Tuple[np.ndarray, np.ndarray]:
+    def calc_signal(
+        self, X: ArrayLike, direction="past"
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Parameters
         ----------
-        X : {array-like, pd.DataFrame, List[List[float]]} 
+        X : {array-like, pd.DataFrame, List[List[float]]}
             of shape (n_samples, n_features)
 
         direction : str
@@ -119,15 +125,17 @@ class InfoDynamics:
         for i, x in enumerate(X):
             jump_index = i + self.jump
             # select {window} elements after i, or empty array
-            if direction == 'past':
+            if direction == "past":
                 # compare x with elements before it
-                submat = X[max(0, i - self.window) : i, ]
-            elif direction == 'future':
+                submat = X[max(0, jump_index - self.window) : jump_index,]
+            elif direction == "future":
                 # compare x with elements after it
-                submat = X[i : max(ts_len + 1, i + self.window + 1), ]
+                submat = X[jump_index : max(ts_len + 1, jump_index + self.window + 1),]
             else:
-                raise ValueError(f"Invalid value for parameter 'direction': {direction}. Must be 'past' or 'future'.")
-            
+                raise ValueError(
+                    f"Invalid value for parameter 'direction': {direction}. Must be 'past' or 'future'."
+                )
+
             if submat.shape[0] == self.window:
                 # use broadcasting to calculate js_dist for all elements in submat
                 tmp = self.measure(x, submat)
@@ -201,7 +209,7 @@ class InfoDynamics:
     #     X = self._validate_data(X)
 
     #     # validate parameters
-    #     if self.window < X.shape[0]: 
+    #     if self.window < X.shape[0]:
     #         warnings.warn(f"Window size ({self.window}) is greater than the length of input data ({X.shape[0]}).")
 
     #     novelty = self.calculate_novelty(X)
