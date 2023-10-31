@@ -17,7 +17,7 @@ from pandas import DataFrame
 
 
 class InfoDynamics:
-    def __init__(self, measure: Callable, window: int, inplace_constant: Optional[Union[int, float]] = 0, averaging_weigts: Optional[ArrayLike] = None):
+    def __init__(self, measure: Callable, window_size: int, jump_size: int, inplace_constant: Optional[Union[int, float]] = 0, averaging_weigts: Optional[ArrayLike] = None):
         """
 
         Parameters
@@ -25,8 +25,11 @@ class InfoDynamics:
         measure : Callable
             distance / similarity metric to use for comparison of observations.
 
-        window : int
+        window_size : int
             context size (n observations) for calculating novelty.
+
+        jump_size : int
+            number of observations to ignore before window kicks in.
 
         inplace_constant : Optional[Union[int, float]]
             constant number that gets added to the signal at the beginning and end of the time series.
@@ -38,7 +41,8 @@ class InfoDynamics:
             Must be of length window - 1.
         """
         self.measure = measure
-        self.window = window
+        self.window = window_size
+        self.jump = jump_size
         self.inplace_constant = inplace_constant
         self.averaging_weigts = averaging_weigts
 
@@ -50,7 +54,7 @@ class InfoDynamics:
         else:
             return np.mean(tmp), np.std(tmp)
 
-    def calculate_novelty(self, X: ArrayLike) -> Tuple[np.ndarray, np.ndarray]:
+    def _calculate_novelty(self, X: ArrayLike) -> Tuple[np.ndarray, np.ndarray]:
 
         ts_len = X.shape[0]
 
@@ -73,7 +77,7 @@ class InfoDynamics:
 
         return N_hat, N_sd
 
-    def calculate_transience(self, X: ArrayLike) -> Tuple[np.ndarray, np.ndarray]:
+    def _calculate_transience(self, X: ArrayLike) -> Tuple[np.ndarray, np.ndarray]:
 
         ts_len = X.shape[0]
 
@@ -95,6 +99,46 @@ class InfoDynamics:
             T_hat[i], T_sd[i] = self._summarize_tmp(tmp)
 
         return T_hat, T_sd
+
+    def calc_signal(self, X: ArrayLike, direction='past') -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Parameters
+        ----------
+        X : {array-like, pd.DataFrame, List[List[float]]} 
+            of shape (n_samples, n_features)
+
+        direction : str
+            'past' or 'future'
+        """
+
+        ts_len = X.shape[0]
+
+        H_hat = np.empty(ts_len)
+        H_sd = np.empty(ts_len)
+
+        for i, x in enumerate(X):
+            jump_index = i + self.jump
+            # select {window} elements after i, or empty array
+            if direction == 'past':
+                # compare x with elements before it
+                submat = X[max(0, i - self.window) : i, ]
+            elif direction == 'future':
+                # compare x with elements after it
+                submat = X[i : max(ts_len + 1, i + self.window + 1), ]
+            else:
+                raise ValueError(f"Invalid value for parameter 'direction': {direction}. Must be 'past' or 'future'.")
+            
+            if submat.shape[0] == self.window:
+                # use broadcasting to calculate js_dist for all elements in submat
+                tmp = self.measure(x, submat)
+                # skip the first comparison (x with itself)
+                tmp = tmp[1:]
+            else:
+                tmp = np.full([self.window - 1], self.inplace_constant)
+
+            H_hat[i], H_sd[i] = self._summarize_tmp(tmp)
+
+        return H_hat, H_sd
 
     # def calc_jump(self, X: np.Array, j, jumps):
 
