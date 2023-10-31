@@ -13,7 +13,6 @@ from typing import Optional, Union, Callable, Tuple
 from numpy.typing import ArrayLike
 
 import numpy as np
-from pandas import DataFrame
 
 
 class InfoDynamics:
@@ -123,14 +122,19 @@ class InfoDynamics:
         H_sd = np.empty(ts_len)
 
         for i, x in enumerate(X):
-            jump_index = i + self.jump
             # select {window} elements after i, or empty array
             if direction == "past":
+                jump_index = i - self.jump
                 # compare x with elements before it
-                submat = X[max(0, jump_index - self.window) : jump_index,]
+                i_lower = max(0, jump_index - self.window)
+                i_upper = max(0, jump_index)
+                submat = X[i_lower : i_upper, ]
             elif direction == "future":
+                jump_index = i + self.jump
                 # compare x with elements after it
-                submat = X[jump_index : max(ts_len + 1, jump_index + self.window + 1),]
+                i_lower = jump_index
+                i_upper = min(ts_len - 1, jump_index + self.window)
+                submat = X[i_lower : i_upper, ]
             else:
                 raise ValueError(
                     f"Invalid value for parameter 'direction': {direction}. Must be 'past' or 'future'."
