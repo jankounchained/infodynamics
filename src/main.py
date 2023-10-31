@@ -137,7 +137,7 @@ class InfoDynamics:
                 submat = X[i_lower : i_upper, ]
             else:
                 raise ValueError(
-                    f"Invalid value for parameter 'direction': {direction}. Must be 'past' or 'future'."
+                    f"Invalid value for parameter 'relative_to': {relative_to}. Must be 'past' or 'future'."
                 )
 
             if submat.shape[0] == self.window:
