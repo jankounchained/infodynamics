@@ -104,7 +104,7 @@ class InfoDynamics:
         return T_hat, T_sd
 
     def calc_signal(
-        self, X: ArrayLike, direction="past"
+        self, X: ArrayLike, relative_to="past"
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Parameters
@@ -112,7 +112,7 @@ class InfoDynamics:
         X : {array-like, pd.DataFrame, List[List[float]]}
             of shape (n_samples, n_features)
 
-        direction : str
+        relative_to : str
             'past' or 'future'
         """
 
@@ -123,13 +123,13 @@ class InfoDynamics:
 
         for i, x in enumerate(X):
             # select {window} elements after i, or empty array
-            if direction == "past":
+            if relative_to == "past":
                 jump_index = i - self.jump
                 # compare x with elements before it
                 i_lower = max(0, jump_index - self.window)
                 i_upper = max(0, jump_index)
                 submat = X[i_lower : i_upper, ]
-            elif direction == "future":
+            elif relative_to == "future":
                 jump_index = i + self.jump
                 # compare x with elements after it
                 i_lower = jump_index
