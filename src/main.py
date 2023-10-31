@@ -59,6 +59,19 @@ class InfoDynamics:
         else:
             return np.mean(tmp), np.std(tmp)
 
+    def _validate_data(self, X: ArrayLike) -> np.ndarray:
+        """
+        """
+        if isinstance(X, list):
+            if isinstance(X[0], list):
+                X = np.array(X)
+        elif isinstance(X, np.ndarray):
+            pass
+        else:
+            warnings.warn(f"Input data type ({type(X)}) not recognized. Returning input data as is.")
+
+        return X
+
     def calc_signal(
         self, X: ArrayLike, relative_to="past"
     ) -> Tuple[np.ndarray, np.ndarray]:
@@ -108,28 +121,111 @@ class InfoDynamics:
 
         return H_hat, H_sd
 
-    # def calc_jump(self, X: np.Array, j, jumps):
+    def _calc_resonance(self, N_hat, T_hat, N_sd, T_sd):
+        """
+        """
+        R_hat = N_hat - T_hat
+        R_sd = (N_sd + T_sd) / 2
 
-    #     ts_len = X.shape[0]
+        # # invalidate signal outside of window bounds
+        # R_hat[: self.window] = np.zeros([self.window], dtype=float) + self.inplace_constant
+        # R_hat[-self.window :] = np.zeros([self.window], dtype=float) + self.inplace_constant
+        # R_sd[: self.window] = np.zeros([self.window], dtype=float) + self.inplace_constant
+        # R_sd[-self.window :] = np.zeros([self.window], dtype=float) + self.inplace_constant
 
-    #     N_hat = np.empty(ts_len)
-    #     N_sd = np.empty(ts_len)
+        return R_hat, R_sd
 
-    #     for i, x in enumerate(X):
-    #         submat = theta[(i - window):(i+window),]
-    #         submat_jump = theta[((i - window) + j):((i+window)+j),]
-    #         tmp = np.zeros(submat.shape[0])
-    #         if submat.any():
-    #             for ii, (xx, xx_j) in enumerate(zip(submat, submat_jump)):
-    #                 tmp[ii] = meas(xx, xx_j)
-    #         else:
-    #             tmp = np.zeros([window]) + weight
+    def fit(self, X, y=None):
+        """Only validates estimator's parameters.
 
-    #         N_hat[i] = np.mean(tmp)
-    #         N_sd[i] = np.std(tmp)
-    #     jumps[j] = N_hat
+        This method allows to: (i) validate the estimator's parameters and
+        (ii) be consistent with the scikit-learn transformer API.
 
-    #     return jumps
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The data to estimate the normalization parameters.
+
+        y : Ignored
+            Not used, present here for API consistency by convention.
+
+        Returns
+        -------
+        self : object
+            Fitted transformer.
+        """
+        self._validate_data(X)
+        return self
+
+    def transform(self, X: ArrayLike, estimate_error=False):
+        """
+        Transform X.
+
+        Parameters
+        ----------
+        X : {array-like, pd.DataFrame, List[List[float]]}
+            of shape (n_samples, n_features)
+            Input data.
+
+        Returns
+        -------
+        X_transformed : {array-like, pd.DataFrame, List[List[float]]}
+            The input data transformed according to the fitted model.
+        """
+        X = self._validate_data(X)
+
+        # novelty & transience
+        N_hat, N_sd = self.calc_signal(X, relative_to="past")
+        T_hat, T_sd = self.calc_signal(X, relative_to="future")
+        # resonance
+        R_hat, R_sd = self._calc_resonance(N_hat, T_hat, N_sd, T_sd)
+
+        # base output
+        X_transformed = {
+            # "window_size": self.window,
+            # "jump": self.jump,
+            # "measure": self.measure.__name__,
+        }
+
+        if estimate_error:
+            X_transformed.update({
+                "N_hat": N_hat,
+                "N_sd": N_sd,
+                "T_hat": T_hat,
+                "T_sd": T_sd,
+                "R_hat": R_hat,
+                "R_sd": R_sd,
+            })
+        else:
+            X_transformed.update({
+                "N_hat": N_hat,
+                "T_hat": T_hat,
+                "R_hat": R_hat,
+            })
+
+        return X_transformed
+    
+    def fit_transform(self, X: ArrayLike, y=None):
+        """
+        Fit to data, then transform it.
+
+        Parameters
+        ----------
+        X : {array-like, pd.DataFrame, List[List[float]]}
+            of shape (n_samples, n_features)
+            Training set.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
+
+        Returns
+        -------
+        X_new : ndarray array of shape (n_samples, n_features_new)
+            Transformed array.
+        """
+        self.fit(X)
+        return self.transform(X)
+
 
     # def slice_zeros(self):
     #     self.nsignal = self.nsignal[self.window:-self.window]
@@ -138,56 +234,3 @@ class InfoDynamics:
     #     self.tsigma = self.tsigma[self.window:-self.window]
     #     self.rsignal = self.rsignal[self.window:-self.window]
     #     self.rsigma = self.rsigma[self.window:-self.window]
-
-    # def _validate_data(self, X: np.Array) -> np.Array:
-    #     """
-    #     """
-    #     if isinstance(X, list):
-    #         if isinstance(X[0], list):
-    #             X = np.array(X)
-    #     elif isinstance(X, DataFrame):
-    #         X = X.to_numpy()
-    #     elif isinstance(X, np.ndarray):
-    #         pass
-    #     else:
-    #         warnings.warn(f"Input data type ({type(X)}) not recognized. Returning input data as is."
-
-    #     return X
-
-    # def fit(self):
-    #     pass
-
-    # def fit_transform(self, X, slice_w=False):
-    #     """
-    #     Parameters
-    #     ----------
-    #     X : {array-like, pd.DataFrame, List[List[float]]} of shape (n_samples, n_features)
-
-    #     """
-
-    #     # validate data
-    #     X = self._validate_data(X)
-
-    #     # validate parameters
-    #     if self.window < X.shape[0]:
-    #         warnings.warn(f"Window size ({self.window}) is greater than the length of input data ({X.shape[0]}).")
-
-    #     novelty = self.calculate_novelty(X)
-    #     transience = self.calculate_transience(X)
-    #     resonance = novelty - transience
-
-    #     if slice_w:
-    #         self.slice_zeros()
-
-    # # DEPRECATED
-    # def fit_save(self, meas, path, slice_w=False):
-    #     self.fit(meas, slice_w)
-
-    #     out = {
-    #         'novelty': self.nsignal.tolist(),
-    #         'novelty_sigma': self.nsigma.tolist(),
-    #         'transience': self.tsignal.tolist(),
-    #         'transience_sigma': self.tsigma.tolist(),
-    #         'resonance': self.rsignal.tolist(),
-    #         'resonance_sigma': self.rsigma.tolist(),
-    #     }
