@@ -10,8 +10,8 @@ test
 import pytest
 import numpy as np
 
-from metrics_entropic import _rel_entr, kl_div, js_div, js_dist
-from main import InfoDynamics
+from infodynamics.metrics_entropic import _rel_entr, kl_div, js_div, js_dist
+from infodynamics.main import InfoDynamics
 
 
 def test_relative_entropy_single_comparison():
@@ -69,10 +69,10 @@ def test_relative_entropy_multiple_comparisons():
     assert np.allclose(res_js_dist, np.array([0.27037753, 0.43722415]))
 
 
-def test_novelty_calculation():
+def test_calc_signal_data_shapes():
+    """shape same as input
     """
-    does it work with varying windows (incl. w=0)?
-    """
+
     X = np.vstack(
         [
             np.random.uniform(0, 1, size=100),
@@ -93,12 +93,17 @@ def test_novelty_calculation():
     X2 = i2.fit_transform(X)
 
     input_shape = X.shape[0]
-    output_shapes = [X0["N_hat"].shape[0], X1["N_hat"].shape[0], X2["N_hat"].shape[0]]
+    output_shapes = [
+        X0["N_hat"].shape[0], X1["N_hat"].shape[0], X2["N_hat"].shape[0],
+        ]
 
     assert np.allclose(input_shape, output_shapes)
 
 
 def test_transience_calculation():
+    """
+    does it work with varying windows (incl. w=0)?
+    """
     pass
 
 
