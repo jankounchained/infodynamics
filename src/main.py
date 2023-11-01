@@ -18,7 +18,7 @@ class InfoDynamics:
         measure: Callable,
         window_size: int,
         jump_size: int = 0,
-        inplace_constant: Optional[Union[int, float]] = 0,
+        inplace_constant: Union[int, float] = 0,
         averaging_weigts: Optional[ArrayLike] = None,
     ):
         """
@@ -49,7 +49,7 @@ class InfoDynamics:
         self.inplace_constant = inplace_constant
         self.averaging_weigts = averaging_weigts
 
-    def _summarize_tmp(self, tmp: ArrayLike) -> np.ndarray:
+    def _summarize_tmp(self, tmp: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """ """
         if self.averaging_weigts is not None:
             return np.average(tmp, weights=self.averaging_weigts, axis=0), np.std(tmp)
@@ -57,20 +57,21 @@ class InfoDynamics:
             return np.mean(tmp), np.std(tmp)
 
     def _validate_data(self, X: ArrayLike) -> np.ndarray:
-        """
-        """
+        """ """
         if isinstance(X, list):
             if isinstance(X[0], list):
                 X = np.array(X)
         elif isinstance(X, np.ndarray):
             pass
         else:
-            warnings.warn(f"Input data type ({type(X)}) not recognized. Returning input data as is.")
+            warnings.warn(
+                f"Input data type ({type(X)}) not recognized. Returning input data as is."
+            )
 
         return X
 
     def calc_signal(
-        self, X: ArrayLike, relative_to="past"
+        self, X: np.ndarray, relative_to="past"
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Parameters
@@ -94,13 +95,13 @@ class InfoDynamics:
                 # compare x with elements before it
                 i_lower = max(0, jump_index - self.window)
                 i_upper = max(0, jump_index)
-                submat = X[i_lower : i_upper, ]
+                submat = X[i_lower:i_upper,]
             elif relative_to == "future":
                 jump_index = i + self.jump
                 # compare x with elements after it
                 i_lower = jump_index
                 i_upper = min(ts_len - 1, jump_index + self.window)
-                submat = X[i_lower : i_upper, ]
+                submat = X[i_lower:i_upper,]
             else:
                 raise ValueError(
                     f"Invalid value for parameter 'relative_to': {relative_to}. Must be 'past' or 'future'."
@@ -118,7 +119,9 @@ class InfoDynamics:
 
         return H_hat, H_sd
 
-    def _calc_resonance(self, N_hat, T_hat, N_sd, T_sd):
+    def _calc_resonance(
+        self, N_hat: np.ndarray, T_hat: np.ndarray, N_sd: np.ndarray, T_sd: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         """
         R_hat = N_hat - T_hat
@@ -132,7 +135,7 @@ class InfoDynamics:
 
         return R_hat, R_sd
 
-    def fit(self, X, y=None):
+    def fit(self, X: ArrayLike, y=None) -> None:
         """Only validates estimator's parameters.
 
         This method allows to: (i) validate the estimator's parameters and
@@ -149,12 +152,14 @@ class InfoDynamics:
         Returns
         -------
         self : object
-            Fitted transformer.
+            Nothing happens, just validates the input data.
         """
         self._validate_data(X)
         return self
 
-    def transform(self, X: ArrayLike, estimate_error=False):
+    def transform(
+        self, X: ArrayLike, estimate_error: bool = False
+    ) -> dict[str, np.ndarray]:
         """
         Transform X.
 
@@ -185,24 +190,28 @@ class InfoDynamics:
         }
 
         if estimate_error:
-            X_transformed.update({
-                "N_hat": N_hat,
-                "N_sd": N_sd,
-                "T_hat": T_hat,
-                "T_sd": T_sd,
-                "R_hat": R_hat,
-                "R_sd": R_sd,
-            })
+            X_transformed.update(
+                {
+                    "N_hat": N_hat,
+                    "N_sd": N_sd,
+                    "T_hat": T_hat,
+                    "T_sd": T_sd,
+                    "R_hat": R_hat,
+                    "R_sd": R_sd,
+                }
+            )
         else:
-            X_transformed.update({
-                "N_hat": N_hat,
-                "T_hat": T_hat,
-                "R_hat": R_hat,
-            })
+            X_transformed.update(
+                {
+                    "N_hat": N_hat,
+                    "T_hat": T_hat,
+                    "R_hat": R_hat,
+                }
+            )
 
         return X_transformed
-    
-    def fit_transform(self, X: ArrayLike, y=None):
+
+    def fit_transform(self, X: ArrayLike, y=None) -> dict[str, np.ndarray]:
         """
         Fit to data, then transform it.
 
