@@ -10,7 +10,7 @@ test
 import pytest
 import numpy as np
 
-from infodynamics.metrics_entropic import _rel_entr, kl_div, js_div, js_dist
+from infodynamics.metrics import _rel_entr, kl_div, js_div, js_dist, cos_sim
 from infodynamics.main import InfoDynamics
 
 
@@ -111,4 +111,12 @@ def test_negative_values_in_input_data():
 
 
 def test_very_small_numbers():
+    pass
+
+
+def test_cossim_single_comparison():
+    pass
+
+
+def test_cossim_vectors():
     pass

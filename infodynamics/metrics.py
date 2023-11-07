@@ -1,6 +1,9 @@
 """
 """
+from typing import Union
 import numpy as np
+from numpy.typing import ArrayLike
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 def _rel_entr(p, q):
@@ -39,3 +42,13 @@ def js_dist(p, q):
     Jesen-Shannon *distance* between two discrete distributions.
     """
     return np.sqrt(js_div(p, q))
+
+
+def cos_sim(x: np.ndarray, y: np.ndarray) -> Union[float, np.ndarray]:
+    """Wrapper of sklearn's cosine_similarity that handles 1d arrays."""
+    if x.ndim == 1:
+        x = x.reshape(1, -1)
+    if y.ndim == 1:
+        y = y.reshape(1, -1)
+
+    return cosine_similarity(x, y)
