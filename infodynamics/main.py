@@ -4,6 +4,9 @@ Class for estimation of information dynamics of time-dependent probabilistic doc
 Removed functionality:
 - sorting
 - normalization
+
+TODO
+- window_size=1 doesn't work
 """
 import warnings
 from typing import Optional, Union, Callable, Tuple
@@ -184,9 +187,9 @@ class InfoDynamics:
 
         # base output
         X_transformed = {
-            # "window_size": self.window,
-            # "jump": self.jump,
-            # "measure": self.measure.__name__,
+            "window_size": self.window,
+            "jump": self.jump,
+            "measure": self.measure.__name__,
         }
 
         if estimate_error:
