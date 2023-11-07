@@ -2,6 +2,7 @@
 """
 import numpy as np
 
+
 def _rel_entr(p, q):
     """
     Vectorized, element-wise relative entropy.
@@ -15,11 +16,13 @@ def _rel_entr(p, q):
     result = np.where(mask, p * np.log2(p / q), 0)
     return result
 
+
 def kl_div(p, q):
     """
     Kullback-Leibler Divergence between two discrete distributions.
     """
     return _rel_entr(p, q).sum(axis=-1)
+
 
 def js_div(p, q):
     """
@@ -29,6 +32,7 @@ def js_div(p, q):
     q = q / np.sum(q, axis=-1, keepdims=True)
     m = (p + q) / 2.0
     return 0.5 * kl_div(p, m) + 0.5 * kl_div(q, m)
+
 
 def js_dist(p, q):
     """
