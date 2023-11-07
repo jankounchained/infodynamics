@@ -19,7 +19,7 @@ setup(
     install_requires=[
         'numpy>=1.19.0',
         'matplotlib>=3.3.2',
-        'scipy>=1.5.2',
+        'scikit-learn>=1.3.0',
         'pytest>=6.2.2'
     ]
 )
