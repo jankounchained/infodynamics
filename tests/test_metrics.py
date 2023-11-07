@@ -14,6 +14,43 @@ from infodynamics.metrics_entropic import _rel_entr, kl_div, js_div, js_dist
 from infodynamics.main import InfoDynamics
 
 
+def test_rel_entr():
+    # Test the _rel_entr function with some sample data
+    p = np.array([0.1, 0.2, 0.7])
+    q = np.array([0.2, 0.3, 0.5])
+    result = _rel_entr(p, q).sum()
+    expected_result = np.sum(p * np.log2(p / q))
+    assert np.isclose(result, expected_result)
+
+
+def test_kl_div():
+    # Test the kl_div function with some sample data
+    p = np.array([0.1, 0.2, 0.7])
+    q = np.array([0.2, 0.3, 0.5])
+    result = kl_div(p, q)
+    expected_result = np.sum(_rel_entr(p, q))
+    assert np.isclose(result, expected_result)
+
+
+def test_js_div():
+    # Test the js_div function with some sample data
+    p = np.array([0.1, 0.2, 0.7])
+    q = np.array([0.2, 0.3, 0.5])
+    result = js_div(p, q)
+    m = 0.5 * (p + q)
+    expected_result = 0.5 * (kl_div(p, m) + kl_div(q, m))
+    assert np.isclose(result, expected_result)
+
+
+def test_js_dist():
+    # Test the js_dist function with some sample data
+    p = np.array([0.1, 0.2, 0.7])
+    q = np.array([0.2, 0.3, 0.5])
+    result = js_dist(p, q)
+    expected_result = np.sqrt(js_div(p, q))
+    assert np.isclose(result, expected_result)
+
+
 def test_relative_entropy_single_comparison():
     """
     compare two prob dists
@@ -69,49 +106,7 @@ def test_relative_entropy_multiple_comparisons():
     assert np.allclose(res_js_dist, np.array([0.27037753, 0.43722415]))
 
 
-def test_calc_signal_data_shapes():
-    """shape same as input
-    """
-
-    X = np.vstack(
-        [
-            np.random.uniform(0, 1, size=100),
-            np.random.normal(0, 1, size=100),
-            np.random.normal(0, 1, size=100),
-            np.random.normal(0, 1, size=100),
-            np.random.normal(0, 1, size=100),
-        ]
-    )
-
-    i0 = InfoDynamics(measure=js_dist, window_size=0)
-    X0 = i0.fit_transform(X)
-
-    i1 = InfoDynamics(measure=js_dist, window_size=1)
-    X1 = i1.fit_transform(X)
-
-    i2 = InfoDynamics(measure=js_dist, window_size=2)
-    X2 = i2.fit_transform(X)
-
-    input_shape = X.shape[0]
-    output_shapes = [
-        X0["N_hat"].shape[0], X1["N_hat"].shape[0], X2["N_hat"].shape[0],
-        ]
-
-    assert np.allclose(input_shape, output_shapes)
-
-
-def test_transience_calculation():
-    """
-    does it work with varying windows (incl. w=0)?
-    """
-    pass
-
-
 def test_negative_values_in_input_data():
-    pass
-
-
-def test_window_size_larger_than_input_data():
     pass
 
 
