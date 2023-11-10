@@ -118,5 +118,5 @@ def test_cossim_single_comparison():
     pass
 
 
-def test_cossim_vectors():
+def test_cossim_multiple_comparisons():
     pass
