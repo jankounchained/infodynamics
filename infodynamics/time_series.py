@@ -23,6 +23,7 @@ class WindowedRollingDistance:
         jump_size: int = 0,
         inplace_constant: Union[int, float] = 0,
         averaging_weigts: Optional[ArrayLike] = None,
+        estimate_error: Optional[bool] = False,
     ):
         """
 
@@ -45,12 +46,17 @@ class WindowedRollingDistance:
             Weights for averaging novelty and transience.
             Can be used to give more weight to more recent observations.
             Must be of length window - 1.
+
+        estimate_error: Optional[bool]
+            Return the standard deviation of the novelty, transience and resonance signals?
+            False by default.
         """
         self.measure = measure
         self.window = window_size
         self.jump = jump_size
         self.inplace_constant = inplace_constant
         self.averaging_weigts = averaging_weigts
+        self.estimate_error = estimate_error
 
     def _summarize_tmp(self, tmp: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """ """
@@ -60,7 +66,10 @@ class WindowedRollingDistance:
             return np.mean(tmp), np.std(tmp)
 
     def _validate_data(self, X: ArrayLike) -> np.ndarray:
-        """ """
+        """
+        UNFINISHED
+        Super basic data validation, converts lists of lists to np.ndarray.
+        """
         if isinstance(X, list):
             if isinstance(X[0], list):
                 X = np.array(X)
@@ -139,15 +148,12 @@ class WindowedRollingDistance:
         return R_hat, R_sd
 
     def fit(self, X: ArrayLike, y=None) -> None:
-        """Only validates estimator's parameters.
-
-        This method allows to: (i) validate the estimator's parameters and
-        (ii) be consistent with the scikit-learn transformer API.
+        """Fit signal to data: distance from past, distance from future, difference between distances.
 
         Parameters
         ----------
         X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            The data to estimate the normalization parameters.
+            The data to estimate fit the signal on.
 
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -155,27 +161,7 @@ class WindowedRollingDistance:
         Returns
         -------
         self : object
-            Nothing happens, just validates the input data.
-        """
-        self._validate_data(X)
-        return self
-
-    def transform(
-        self, X: ArrayLike, estimate_error: bool = False
-    ) -> dict[str, np.ndarray]:
-        """
-        Transform X.
-
-        Parameters
-        ----------
-        X : {array-like, pd.DataFrame, List[List[float]]}
-            of shape (n_samples, n_features)
-            Input data.
-
-        Returns
-        -------
-        X_transformed : {array-like, pd.DataFrame, List[List[float]]}
-            The input data transformed according to the fitted model.
+            Instance with estimated signal.
         """
         X = self._validate_data(X)
 
@@ -183,17 +169,14 @@ class WindowedRollingDistance:
         N_hat, N_sd = self.calc_signal(X, relative_to="past")
         T_hat, T_sd = self.calc_signal(X, relative_to="future")
         # resonance
+        # TODO consider turning this off for jump calculations
         R_hat, R_sd = self._calc_resonance(N_hat, T_hat, N_sd, T_sd)
 
         # base output
-        X_transformed = {
-            "window_size": self.window,
-            "jump": self.jump,
-            "measure": self.measure.__name__,
-        }
+        signal = {}
 
-        if estimate_error:
-            X_transformed.update(
+        if self.estimate_error:
+            signal.update(
                 {
                     "N_hat": N_hat,
                     "N_sd": N_sd,
@@ -204,19 +187,19 @@ class WindowedRollingDistance:
                 }
             )
         else:
-            X_transformed.update(
+            signal.update(
                 {
                     "N_hat": N_hat,
                     "T_hat": T_hat,
                     "R_hat": R_hat,
                 }
             )
-
-        return X_transformed
+        
+        self.signal = signal
 
     def fit_transform(self, X: ArrayLike, y=None) -> dict[str, np.ndarray]:
         """
-        Fit to data, then transform it.
+        Fit to data, return dict with signal.
 
         Parameters
         ----------
@@ -233,4 +216,4 @@ class WindowedRollingDistance:
             Transformed array.
         """
         self.fit(X)
-        return self.transform(X)
+        return self.signal
