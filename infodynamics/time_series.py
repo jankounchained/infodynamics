@@ -134,8 +134,7 @@ class WindowedRollingDistance:
     def _calc_resonance(
         self, N_hat: np.ndarray, T_hat: np.ndarray, N_sd: np.ndarray, T_sd: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        """
+        """ """
         R_hat = N_hat - T_hat
         R_sd = (N_sd + T_sd) / 2
 
@@ -194,7 +193,7 @@ class WindowedRollingDistance:
                     "R_hat": R_hat,
                 }
             )
-        
+
         self.signal = signal
 
     def fit_transform(self, X: ArrayLike, y=None) -> dict[str, np.ndarray]:
