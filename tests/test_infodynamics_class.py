@@ -5,7 +5,7 @@ import numpy as np
 from hypothesis import given, strategies as st
 
 from infodynamics.metrics import _rel_entr, kl_div, js_div, js_dist, cos_sim
-from infodynamics.main import InfoDynamics
+from infodynamics import WindowedRollingDistance
 
 
 def test_calc_signal_data_shapes():
@@ -21,13 +21,13 @@ def test_calc_signal_data_shapes():
         ]
     )
 
-    i0 = InfoDynamics(measure=js_dist, window_size=0)
+    i0 = WindowedRollingDistance(measure=js_dist, window_size=0)
     X0 = i0.fit_transform(X)
 
-    i1 = InfoDynamics(measure=js_dist, window_size=1)
+    i1 = WindowedRollingDistance(measure=js_dist, window_size=1)
     X1 = i1.fit_transform(X)
 
-    i2 = InfoDynamics(measure=js_dist, window_size=2)
+    i2 = WindowedRollingDistance(measure=js_dist, window_size=2)
     X2 = i2.fit_transform(X)
 
     input_shape = X.shape[0]
@@ -50,7 +50,7 @@ def test_transience_calculation():
 def test_validate_input_list_of_lists():
     """ """
     a = [[0.5, 0.5], [0.5, 0.5]]
-    i = InfoDynamics(measure=js_dist, window_size=1)
+    i = WindowedRollingDistance(measure=js_dist, window_size=1)
     X = i._validate_data(a)
 
     assert isinstance(X, np.ndarray)
@@ -67,7 +67,7 @@ def test_validate_input_list_of_lists():
     )
 )
 def test_validate_data_hypothesis(input_list):
-    i = InfoDynamics(measure=js_dist, window_size=1)
+    i = WindowedRollingDistance(measure=js_dist, window_size=1)
     X = i._validate_data(input_list)
 
     assert isinstance(X, np.ndarray)
@@ -98,7 +98,7 @@ def test_window_size(data, window_size):
     )
 
     X = np.array(X)
-    iw = InfoDynamics(measure=js_dist, window_size=window_size)
+    iw = WindowedRollingDistance(measure=js_dist, window_size=window_size)
     Xw = iw.fit_transform(X)
 
     # Add your assertions here, e.g., check the shape of Xw

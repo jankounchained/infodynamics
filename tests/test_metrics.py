@@ -11,7 +11,7 @@ import pytest
 import numpy as np
 
 from infodynamics.metrics import _rel_entr, kl_div, js_div, js_dist, cos_sim
-from infodynamics.main import InfoDynamics
+from infodynamics import WindowedRollingDistance
 
 
 def test_rel_entr():

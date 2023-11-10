@@ -15,7 +15,7 @@ from numpy.typing import ArrayLike
 import numpy as np
 
 
-class InfoDynamics:
+class WindowedRollingDistance:
     def __init__(
         self,
         measure: Callable,
@@ -130,7 +130,7 @@ class InfoDynamics:
         R_hat = N_hat - T_hat
         R_sd = (N_sd + T_sd) / 2
 
-        # # invalidate signal outside of window bounds
+        # invalidate the signal outside of window bounds
         # R_hat[: self.window] = np.zeros([self.window], dtype=float) + self.inplace_constant
         # R_hat[-self.window :] = np.zeros([self.window], dtype=float) + self.inplace_constant
         # R_sd[: self.window] = np.zeros([self.window], dtype=float) + self.inplace_constant
