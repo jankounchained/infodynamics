@@ -6,7 +6,7 @@ from numpy.typing import ArrayLike
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-def _rel_entr(p, q):
+def _rel_entr(p: np.ndarray, q: np.ndarray) -> np.ndarray:
     """
     Vectorized, element-wise relative entropy.
     """
@@ -20,14 +20,14 @@ def _rel_entr(p, q):
     return result
 
 
-def kl_div(p, q):
+def kl_div(p: np.ndarray, q: np.ndarray) -> float:
     """
     Kullback-Leibler Divergence between two discrete distributions.
     """
     return _rel_entr(p, q).sum(axis=-1)
 
 
-def js_div(p, q):
+def js_div(p: np.ndarray, q: np.ndarray) -> float:
     """
     Jensen-Shannon divergence between two discrete distributions.
     """
@@ -37,7 +37,7 @@ def js_div(p, q):
     return 0.5 * kl_div(p, m) + 0.5 * kl_div(q, m)
 
 
-def js_dist(p, q):
+def js_dist(p: np.ndarray, q: np.ndarray) -> float:
     """
     Jesen-Shannon *distance* between two discrete distributions.
     """

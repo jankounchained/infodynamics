@@ -9,21 +9,22 @@ TODO
 - window_size=1 doesn't work
 """
 import warnings
-from typing import Optional, Union, Callable, Tuple
+from typing import Optional, Union, Callable, Tuple, Literal, Self
 from numpy.typing import ArrayLike
+from sklearn.base import BaseEstimator, TransformerMixin
 
 import numpy as np
 
 
-class WindowedRollingDistance:
+class WindowedRollingDistance(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         measure: Callable,
         window_size: int,
         jump_size: int = 0,
         inplace_constant: Union[int, float] = 0,
+        estimate_error: bool = False,
         averaging_weigts: Optional[ArrayLike] = None,
-        estimate_error: Optional[bool] = False,
     ):
         """
 
@@ -38,25 +39,26 @@ class WindowedRollingDistance:
         jump_size : int
             number of observations to ignore before window kicks in.
 
-        inplace_constant : Optional[Union[int, float]]
+        inplace_constant : Union[int, float]
             constant number that gets added to the signal at the beginning and end of the time series.
             0 by default.
+
+        estimate_error: bool
+            Return the standard deviation of the novelty, transience and resonance signals?
+            False by default.
 
         averaging_weigts : Optional[np.Array]
             Weights for averaging novelty and transience.
             Can be used to give more weight to more recent observations.
             Must be of length window - 1.
-
-        estimate_error: Optional[bool]
-            Return the standard deviation of the novelty, transience and resonance signals?
-            False by default.
+            None by default.
         """
         self.measure = measure
-        self.window = window_size
-        self.jump = jump_size
+        self.window_size = window_size
+        self.jump_size = jump_size
         self.inplace_constant = inplace_constant
-        self.averaging_weigts = averaging_weigts
         self.estimate_error = estimate_error
+        self.averaging_weigts = averaging_weigts
 
     def _summarize_tmp(self, tmp: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """ """
@@ -83,16 +85,21 @@ class WindowedRollingDistance:
         return X
 
     def calc_signal(
-        self, X: np.ndarray, relative_to="past"
+        self, X: np.ndarray, relative_to: Literal['past', 'future']
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
+        Iterates over points in X and calculates the distance between each point 
+        and it's context (past or future points).
+        
         Parameters
         ----------
         X : {array-like, pd.DataFrame, List[List[float]]}
             of shape (n_samples, n_features)
 
-        relative_to : str
-            'past' or 'future'
+        relative_to : Literal['past', 'future']
+            calculate distance between i and
+            past: previous elements in X
+            future: following elements in X
         """
 
         ts_len = X.shape[0]
@@ -103,29 +110,29 @@ class WindowedRollingDistance:
         for i, x in enumerate(X):
             # select {window} elements after i, or empty array
             if relative_to == "past":
-                jump_index = i - self.jump
+                jump_index = i - self.jump_size
                 # compare x with elements before it
-                i_lower = max(0, jump_index - self.window)
+                i_lower = max(0, jump_index - self.window_size)
                 i_upper = max(0, jump_index)
                 submat = X[i_lower:i_upper,]
             elif relative_to == "future":
-                jump_index = i + self.jump
+                jump_index = i + self.jump_size
                 # compare x with elements after it
                 i_lower = jump_index
-                i_upper = min(ts_len - 1, jump_index + self.window)
+                i_upper = min(ts_len - 1, jump_index + self.window_size)
                 submat = X[i_lower:i_upper,]
             else:
                 raise ValueError(
                     f"Invalid value for parameter 'relative_to': {relative_to}. Must be 'past' or 'future'."
                 )
 
-            if submat.shape[0] == self.window:
+            if submat.shape[0] == self.window_size:
                 # use broadcasting to calculate js_dist for all elements in submat
                 tmp = self.measure(x, submat)
                 # skip the first comparison (x with itself)
                 tmp = tmp[1:]
             else:
-                tmp = np.full([self.window - 1], self.inplace_constant)
+                tmp = np.full([self.window_size - 1], self.inplace_constant)
 
             H_hat[i], H_sd[i] = self._summarize_tmp(tmp)
 
@@ -139,14 +146,14 @@ class WindowedRollingDistance:
         R_sd = (N_sd + T_sd) / 2
 
         # invalidate the signal outside of window bounds
-        # R_hat[: self.window] = np.zeros([self.window], dtype=float) + self.inplace_constant
-        # R_hat[-self.window :] = np.zeros([self.window], dtype=float) + self.inplace_constant
-        # R_sd[: self.window] = np.zeros([self.window], dtype=float) + self.inplace_constant
-        # R_sd[-self.window :] = np.zeros([self.window], dtype=float) + self.inplace_constant
+        # R_hat[: self.window_size] = np.zeros([self.window_size], dtype=float) + self.inplace_constant
+        # R_hat[-self.window_size :] = np.zeros([self.window_size], dtype=float) + self.inplace_constant
+        # R_sd[: self.window_size] = np.zeros([self.window_size], dtype=float) + self.inplace_constant
+        # R_sd[-self.window_size :] = np.zeros([self.window_size], dtype=float) + self.inplace_constant
 
         return R_hat, R_sd
 
-    def fit(self, X: ArrayLike, y=None) -> None:
+    def fit(self, X: ArrayLike, y=None) -> Self:
         """Fit signal to data: distance from past, distance from future, difference between distances.
 
         Parameters
@@ -195,6 +202,7 @@ class WindowedRollingDistance:
             )
 
         self.signal = signal
+        return self
 
     def fit_transform(self, X: ArrayLike, y=None) -> dict[str, np.ndarray]:
         """
