@@ -52,3 +52,11 @@ def cos_sim(x: np.ndarray, y: np.ndarray) -> Union[float, np.ndarray]:
         y = y.reshape(1, -1)
 
     return cosine_similarity(x, y)
+
+
+DISTANCES = {
+    "kld": kl_div,
+    "jsd": js_div,
+    "jensenshannon": js_dist,
+    "cosine": cos_sim,
+}

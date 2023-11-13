@@ -10,16 +10,18 @@ TODO
 """
 import warnings
 from typing import Optional, Union, Callable, Tuple, Literal, Self
+
+import numpy as np
 from numpy.typing import ArrayLike
 from sklearn.base import BaseEstimator, TransformerMixin
 
-import numpy as np
+from infodynamics.metrics import DISTANCES
 
 
 class WindowedRollingDistance(BaseEstimator, TransformerMixin):
     def __init__(
         self,
-        measure: Callable,
+        measure: Union[str, Callable],
         window_size: int,
         jump_size: int = 0,
         inplace_constant: Union[int, float] = 0,
@@ -30,35 +32,39 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
 
         Parameters
         -----------
-        measure : Callable
+        measure : str or Callable
             distance / similarity metric to use for comparison of observations.
+            Either a function, or a string 
 
         window_size : int
             context size (n observations) for calculating novelty.
 
-        jump_size : int
+        jump_size : int, default=0
             number of observations to ignore before window kicks in.
 
-        inplace_constant : Union[int, float]
+        inplace_constant : int or float, default=0
             constant number that gets added to the signal at the beginning and end of the time series.
-            0 by default.
 
-        estimate_error: bool
+        estimate_error: bool, default=False
             Return the standard deviation of the novelty, transience and resonance signals?
-            False by default.
 
-        averaging_weigts : Optional[np.Array]
+        averaging_weigts : np.ndarray or None, default=None
             Weights for averaging novelty and transience.
             Can be used to give more weight to more recent observations.
             Must be of length window - 1.
-            None by default.
         """
-        self.measure = measure
         self.window_size = window_size
         self.jump_size = jump_size
         self.inplace_constant = inplace_constant
         self.estimate_error = estimate_error
         self.averaging_weigts = averaging_weigts
+
+        if measure in DISTANCES:
+            self.measure = DISTANCES[measure]
+        elif callable(measure):
+            self.measure = measure
+        else:
+            raise AttributeError(f"Invalid value for parameter 'measure': {measure}")
 
     def _summarize_tmp(self, tmp: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """ """
