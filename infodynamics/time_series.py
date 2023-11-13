@@ -1,10 +1,6 @@
 """
 Class for estimation of information dynamics of time-dependent probabilistic document representations.
 
-Removed functionality:
-- sorting
-- normalization
-
 TODO
 - window_size=1 doesn't work
 """
