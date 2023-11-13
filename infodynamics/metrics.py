@@ -1,0 +1,62 @@
+"""
+"""
+from typing import Union
+import numpy as np
+from numpy.typing import ArrayLike
+from sklearn.metrics.pairwise import cosine_similarity
+
+
+def _rel_entr(p: np.ndarray, q: np.ndarray) -> np.ndarray:
+    """
+    Vectorized, element-wise relative entropy.
+    """
+    # add smalles possible float to avoid RunTime warnings
+    # about zero division
+    p = np.asarray(p) + np.finfo(float).eps
+    q = np.asarray(q) + np.finfo(float).eps
+
+    mask = (p > 0) & (q > 0)
+    result = np.where(mask, p * np.log2(p / q), 0)
+    return result
+
+
+def kl_div(p: np.ndarray, q: np.ndarray) -> float:
+    """
+    Kullback-Leibler Divergence between two discrete distributions.
+    """
+    return _rel_entr(p, q).sum(axis=-1)
+
+
+def js_div(p: np.ndarray, q: np.ndarray) -> float:
+    """
+    Jensen-Shannon divergence between two discrete distributions.
+    """
+    p = p / np.sum(p, axis=-1, keepdims=True)
+    q = q / np.sum(q, axis=-1, keepdims=True)
+    m = (p + q) / 2.0
+    return 0.5 * kl_div(p, m) + 0.5 * kl_div(q, m)
+
+
+def js_dist(p: np.ndarray, q: np.ndarray) -> float:
+    """
+    Jesen-Shannon *distance* between two discrete distributions.
+    """
+    return np.sqrt(js_div(p, q))
+
+
+def cos_sim(x: np.ndarray, y: np.ndarray) -> Union[float, np.ndarray]:
+    """Wrapper of sklearn's cosine_similarity that handles 1d arrays."""
+    if x.ndim == 1:
+        x = x.reshape(1, -1)
+    if y.ndim == 1:
+        y = y.reshape(1, -1)
+
+    return cosine_similarity(x, y)
+
+
+DISTANCES = {
+    "kld": kl_div,
+    "jsd": js_div,
+    "jensenshannon": js_dist,
+    "cosine": cos_sim,
+}
