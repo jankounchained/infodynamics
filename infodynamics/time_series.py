@@ -5,7 +5,8 @@ TODO
 - window_size=1 doesn't work
 """
 import warnings
-from typing import Optional, Union, Callable, Tuple, Literal, Self
+from typing import Optional, Union, Callable, Tuple, Literal
+from typing_extensions import Self
 
 import numpy as np
 from numpy.typing import ArrayLike
