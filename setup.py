@@ -20,6 +20,8 @@ setup(
         'numpy>=1.19.0',
         'matplotlib>=3.3.2',
         'scikit-learn>=1.3.0',
-        'pytest>=6.2.2'
+        'pytest>=6.2.2',
+        'typing-extensions>=4.8.0',
+        'hypothesis>=6.87.0',
     ]
 )
