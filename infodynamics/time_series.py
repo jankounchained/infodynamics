@@ -133,7 +133,7 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
                 # use broadcasting to calculate js_dist for all elements in submat
                 tmp = self.measure(x, submat)
                 # skip the first comparison (x with itself)
-                # tmp = tmp[1:]
+                tmp = tmp[:, 1:]
             else:
                 tmp = np.full([self.window_size - 1], self.inplace_constant)
 
