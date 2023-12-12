@@ -9,6 +9,7 @@ test
 
 import pytest
 import numpy as np
+from numpy.linalg import norm
 
 from infodynamics.metrics import _rel_entr, kl_div, js_div, js_dist, cos_sim
 from infodynamics import WindowedRollingDistance
@@ -115,8 +116,24 @@ def test_very_small_numbers():
 
 
 def test_cossim_single_comparison():
-    pass
+    p = np.array([0.5, 0.2, 0.7])
+    q = np.array([0.2, 0.1, 0.5])
+
+    res_cos_sim = cos_sim(p, q)
+    expected_result = np.dot(p, q) / (norm(p) * norm(q))
+
+    assert np.isclose(res_cos_sim, expected_result)
 
 
 def test_cossim_multiple_comparisons():
-    pass
+    p = np.array([0.5, 0.2, 0.7])
+    q = np.array([[0.2, 0.1, 0.5], [0.1, 0.8, 0.7], [0.4, 0.6, 0.2]])
+
+    res_cos_sim = cos_sim(p, q)
+
+    expected_result = []
+    for qi in q:
+        row_cos_sim = np.dot(p, qi) / (norm(p) * norm(qi))
+        expected_result.append(row_cos_sim)
+
+    assert np.allclose(res_cos_sim, np.array(expected_result))
