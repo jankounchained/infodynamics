@@ -133,7 +133,10 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
                 # use broadcasting to calculate js_dist for all elements in submat
                 tmp = self.measure(x, submat)
                 # skip the first comparison (x with itself)
-                tmp = tmp[:, 1:]
+                if len(tmp.shape) == 1:
+                    tmp = tmp[1:]
+                else:
+                    tmp = tmp[:, 1:]
             else:
                 tmp = np.full([self.window_size - 1], self.inplace_constant)
 
@@ -173,7 +176,6 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
             Instance with estimated signal.
         """
         X = self._validate_data(X)
-        print(X)
 
         # novelty & transience
         N_hat, N_sd = self.calc_signal(X, relative_to="past")
