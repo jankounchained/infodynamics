@@ -31,7 +31,7 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
         -----------
         measure : str or Callable
             distance / similarity metric to use for comparison of observations.
-            Either a function, or a string 
+            Either a function, or a string
 
         window_size : int
             context size (n observations) for calculating novelty.
@@ -88,12 +88,12 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
         return X
 
     def calc_signal(
-        self, X: np.ndarray, relative_to: Literal['past', 'future']
+        self, X: np.ndarray, relative_to: Literal["past", "future"]
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Iterates over points in X and calculates the distance between each point 
+        Iterates over points in X and calculates the distance between each point
         and it's context (past or future points).
-        
+
         Parameters
         ----------
         X : {array-like, pd.DataFrame, List[List[float]]}
@@ -133,7 +133,10 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
                 # use broadcasting to calculate js_dist for all elements in submat
                 tmp = self.measure(x, submat)
                 # skip the first comparison (x with itself)
-                tmp = tmp[1:]
+                if len(tmp.shape) == 1:
+                    tmp = tmp[1:]
+                else:
+                    tmp = tmp[:, 1:]
             else:
                 tmp = np.full([self.window_size - 1], self.inplace_constant)
 
