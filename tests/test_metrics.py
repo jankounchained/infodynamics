@@ -11,7 +11,7 @@ import pytest
 import numpy as np
 from numpy.linalg import norm
 
-from infodynamics.metrics import _rel_entr, kl_div, js_div, js_dist, cos_sim
+from infodynamics.metrics import _rel_entr, kl_div, js_div, js_dist, cos_sim, cos_dist, DISTANCES
 from infodynamics import WindowedRollingDistance
 
 
@@ -137,3 +137,23 @@ def test_cossim_multiple_comparisons():
         expected_result.append(row_cos_sim)
 
     assert np.allclose(res_cos_sim, np.array(expected_result))
+
+
+def test_cos_dist_is_one_minus_cos_sim():
+    p = np.array([0.5, 0.2, 0.7])
+    q = np.array([0.2, 0.1, 0.5])
+
+    assert np.isclose(cos_dist(p, q), 1.0 - cos_sim(p, q))
+
+
+def test_cos_dist_identical_vectors_is_zero():
+    p = np.array([0.5, 0.2, 0.7])
+
+    assert np.isclose(cos_dist(p, p), 0.0)
+
+
+def test_distances_cosine_key_is_a_distance_not_a_similarity():
+    """'cosine' must resolve to a distance (higher = more dissimilar), since
+    WindowedRollingDistance/InfoDynamics default to it for novelty/transience."""
+    assert DISTANCES["cosine"] is cos_dist
+    assert DISTANCES["cosine_similarity"] is cos_sim
