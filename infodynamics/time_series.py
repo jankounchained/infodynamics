@@ -1,8 +1,5 @@
 """
 Class for estimation of information dynamics of time-dependent probabilistic document representations.
-
-TODO
-- window_size=1 doesn't work
 """
 import warnings
 from typing import Optional, Union, Callable, Tuple, Literal
@@ -48,7 +45,7 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
         averaging_weigts : np.ndarray or None, default=None
             Weights for averaging novelty and transience.
             Can be used to give more weight to more recent observations.
-            Must be of length window - 1.
+            Must be of length window_size.
         """
         self.window_size = window_size
         self.jump_size = jump_size
@@ -120,9 +117,9 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
                 submat = X[i_lower:i_upper,]
             elif relative_to == "future":
                 jump_index = i + self.jump_size
-                # compare x with elements after it
-                i_lower = jump_index
-                i_upper = min(ts_len - 1, jump_index + self.window_size)
+                # compare x with elements after it (excluding x itself)
+                i_lower = jump_index + 1
+                i_upper = i_lower + self.window_size
                 submat = X[i_lower:i_upper,]
             else:
                 raise ValueError(
@@ -132,13 +129,8 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
             if submat.shape[0] == self.window_size:
                 # use broadcasting to calculate js_dist for all elements in submat
                 tmp = self.measure(x, submat)
-                # skip the first comparison (x with itself)
-                if len(tmp.shape) == 1:
-                    tmp = tmp[1:]
-                else:
-                    tmp = tmp[:, 1:]
             else:
-                tmp = np.full([self.window_size - 1], self.inplace_constant)
+                tmp = np.full([self.window_size], self.inplace_constant)
 
             H_hat[i], H_sd[i] = self._summarize_tmp(tmp)
 
