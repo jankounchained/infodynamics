@@ -54,9 +54,15 @@ def cos_sim(x: np.ndarray, y: np.ndarray) -> Union[float, np.ndarray]:
     return cosine_similarity(x, y)
 
 
+def cos_dist(x: np.ndarray, y: np.ndarray) -> Union[float, np.ndarray]:
+    """Cosine *distance* (1 - cosine similarity); higher means more dissimilar."""
+    return 1.0 - cos_sim(x, y)
+
+
 DISTANCES = {
     "kld": kl_div,
     "jsd": js_div,
     "jensenshannon": js_dist,
-    "cosine": cos_sim,
+    "cosine": cos_dist,
+    "cosine_similarity": cos_sim,
 }
