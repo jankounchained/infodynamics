@@ -22,15 +22,23 @@ app recomputes embeddings.
 
 ```bash
 pip install streamlit pyyaml pandas numpy matplotlib
-# 1. build the cache with your real embeddings:
-EMB_BACKEND=qwen python build_dashboard_artifacts.py
+pip install -e ".[embedding]"   # sentence-transformers, for the encoder
+# 1. build the cache with a real HuggingFace Hub encoder model:
+python build_dashboard_artifacts.py --model-name Qwen/Qwen3-Embedding-8B
 # 2. launch:
 streamlit run app.py
 ```
 
-`EMB_BACKEND` defaults to `tfidf` (a shared-vocabulary fallback that runs with
-no torch/network). **Swap point:** `embed_corpus_qwen()` in
-`build_dashboard_artifacts.py` — the only thing that touches the model.
+`--model-name` is a required argument, not an environment variable — the
+command you run is self-documenting, and `cache/config.json` records exactly
+which model built the cache. There is no lexical/TF-IDF fallback: the
+ai-vs-human comparison and the nearest-neighbour "human contrast" search only
+make sense over a real semantic embedding space. For a quick smoke run
+against a small local model instead of downloading the full-size one, add
+`--model-name sentence-transformers/all-MiniLM-L6-v2 --limit 5`.
+
+**Swap point:** `embed_corpus()` in `build_dashboard_artifacts.py` — the only
+function that touches the encoder model (via `infodynamics.embedding.Encoder`).
 
 ## The loop (Evidence bench page)
 

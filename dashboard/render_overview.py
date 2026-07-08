@@ -55,7 +55,7 @@ for a, c in [("ai", AI), ("human", HU)]:
 ax.axhline(0, color="k", lw=0.5); ax.set_title("Rhythm (novelty autocorrelation)")
 ax.set_xlabel("lag (sentences)"); ax.legend()
 
-fig.suptitle("Evidence-bench corpus views — AI vs human (TF-IDF fallback embeddings)",
+fig.suptitle(f"Evidence-bench corpus views — AI vs human ({b.config['model_name']} embeddings)",
              fontsize=14, y=0.98)
 fig.savefig("corpus_overview.png", dpi=130, bbox_inches="tight")
 print("saved corpus_overview.png")

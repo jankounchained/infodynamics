@@ -4,8 +4,8 @@ Evidence-bench Streamlit app — a thin UI over bench_core.
 Run:
     cd dashboard
     pip install streamlit pyyaml pandas numpy matplotlib
-    # (re)build the cache first, with your embeddings:
-    EMB_BACKEND=qwen python build_dashboard_artifacts.py
+    # (re)build the cache first, with a HuggingFace Hub encoder model:
+    python build_dashboard_artifacts.py --model-name Qwen/Qwen3-Embedding-8B
     streamlit run app.py
 
 Purpose: turn multi-scale structure signals into concrete, quotable agent
@@ -42,7 +42,7 @@ PAGES = ["Overview", "Author signature", "Document detail", "Pair comparison",
          "Evidence bench"]
 page = st.sidebar.radio("View", PAGES)
 st.sidebar.caption(f"cache: {b.config['n_docs']} docs · "
-                   f"{b.config['backend']} emb · dim {b.config['emb_dim']}")
+                   f"{b.config['model_name']} emb · dim {b.config['emb_dim']}")
 
 
 # --------------------------------------------------------------------------- #
