@@ -8,6 +8,8 @@ import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
+from infodynamics.util import znorm_rows
+
 
 def plot_overlay(
     signals: Dict[str, np.ndarray],
@@ -152,4 +154,84 @@ def plot_projection(clusterer, method: str = "pca", ax: Optional[Axes] = None, *
 
     scatter = ax.scatter(projection[:, 0], projection[:, 1], c=clusterer.labels_, **kwargs)
     ax.legend(*scatter.legend_elements(), title="cluster")
+    return ax
+
+
+def plot_ssm(S: np.ndarray, ax: Optional[Axes] = None, **kwargs) -> Axes:
+    """Plots a self-similarity matrix as a heatmap.
+
+    Parameters
+    ----------
+    S : np.ndarray of shape (n_chunks, n_chunks)
+        self-similarity matrix, e.g. from infodynamics.scalogram.self_similarity_matrix.
+    """
+    if ax is None:
+        _, ax = plt.subplots()
+
+    kwargs.setdefault("cmap", "magma")
+    kwargs.setdefault("origin", "upper")
+    kwargs.setdefault("aspect", "auto")
+    ax.imshow(S, **kwargs)
+    ax.set_xlabel("chunk index")
+    ax.set_ylabel("chunk index")
+    return ax
+
+
+def plot_scalogram(
+    matrix: np.ndarray,
+    scales: Sequence[int],
+    ax: Optional[Axes] = None,
+    znormalize: bool = True,
+    **kwargs,
+) -> Axes:
+    """Plots a scalogram (window-size x chunk-index distance matrix) as a heatmap.
+
+    Parameters
+    ----------
+    matrix : np.ndarray of shape (n_scales, n_chunks)
+        scalogram matrix, e.g. from infodynamics.scalogram.Scalogram.
+
+    scales : Sequence[int]
+        window size for each row of 'matrix'.
+
+    znormalize : bool, default=True
+        z-normalize each row before plotting, so scales become visually comparable.
+    """
+    if ax is None:
+        _, ax = plt.subplots()
+
+    values = znorm_rows(matrix) if znormalize else matrix
+    kwargs.setdefault("cmap", "viridis")
+    kwargs.setdefault("origin", "lower")
+    kwargs.setdefault("aspect", "auto")
+    ax.imshow(values, extent=[0, matrix.shape[1], 0, len(scales)], **kwargs)
+    ax.set_yticks(np.arange(len(scales)) + 0.5)
+    ax.set_yticklabels(scales)
+    ax.set_xlabel("chunk index")
+    ax.set_ylabel("window size")
+    return ax
+
+
+def plot_multiscale_novelty(
+    novelty: np.ndarray, radii: Sequence[int], ax: Optional[Axes] = None, **kwargs
+) -> Axes:
+    """Plots multi-scale Foote novelty, one line per kernel radius.
+
+    Parameters
+    ----------
+    novelty : np.ndarray of shape (n_radii, n_chunks)
+        novelty matrix, e.g. from infodynamics.scalogram.FooteNovelty.
+
+    radii : Sequence[int]
+        kernel radius for each row of 'novelty'.
+    """
+    if ax is None:
+        _, ax = plt.subplots()
+
+    for row, radius in zip(novelty, radii):
+        ax.plot(row, label=f"r={radius}", **kwargs)
+
+    ax.set_xlabel("chunk index")
+    ax.set_ylabel("novelty")
+    ax.legend(title="kernel radius")
     return ax
