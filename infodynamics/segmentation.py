@@ -9,6 +9,22 @@ from typing import List, Literal, Tuple
 Level = Literal["word", "sentence", "paragraph"]
 
 
+def strip_markdown(text: str) -> str:
+    """Strips common Markdown formatting symbols (headings, emphasis, links,
+    bullets, code, blockquotes) while leaving prose punctuation untouched.
+    Meant as a preprocessing step ahead of segment() for raw .md documents.
+    """
+    text = re.sub(r"`{1,3}[^`]*`{1,3}", " ", text)  # inline code / code fences
+    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)  # links/images -> visible text
+    text = re.sub(r"^\s{0,3}#{1,6}\s*", "", text, flags=re.M)  # heading hashes
+    text = re.sub(r"^\s*[-*+]\s+\[[ xX]\]\s*", "", text, flags=re.M)  # checkboxes
+    text = re.sub(r"^\s*[-*+]\s+", "", text, flags=re.M)  # bullets (before emphasis: '*'/'-' also mark bullets)
+    text = re.sub(r"^\s*\d+\.\s+", "", text, flags=re.M)  # numbered lists
+    text = re.sub(r"^>\s?", "", text, flags=re.M)  # blockquotes
+    text = re.sub(r"[*_]{1,3}", "", text)  # bold/italic markers
+    return text
+
+
 @dataclass
 class Chunk:
     text: str
