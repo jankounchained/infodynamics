@@ -17,14 +17,16 @@ PIPELINE
                                empty content)
     2. segment_corpus         document text -> list of sentences; short docs
                                are dropped
-    3. embed_corpus            every sentence in the corpus, embedded in one
-                               shared encoder call
-    4. analyze_document        per document: self-similarity matrix,
-                               scalogram, multi-scale Foote novelty,
+    3. encode_corpus            every sentence in the corpus, encoded in one
+                               shared call -- once for embeddings, and again
+                               for morphological features if enabled
+    4. analyze_document        per document, per signal: self-similarity
+                               matrix, scalogram, multi-scale Foote novelty,
                                interpretable descriptors
     5. build_corpus_aggregates corpus-level views: PCA document map, which
                                descriptors most separate authors, per-author
                                mean novelty profile / scale-energy / rhythm
+                               -- for embeddings, and again for morphology
     6. build_human_index       flat nearest-neighbour index over human
                                sentences (powers the app's "suggest a human
                                contrast" feature)
@@ -36,25 +38,43 @@ global state; every stage takes the PipelineConfig (or the specific pieces of
 it needs) explicitly, so the pipeline can just as well be driven from a
 notebook or a test as from the CLI.
 
+The self-similarity matrix / scalogram / Foote novelty math is
+infodynamics.scalogram (self_similarity_matrix, Scalogram, FooteNovelty,
+structure_descriptors) -- the same functions run for both the embedding and
+morphology signals, since both are just (n_sentences, n_features) matrices to
+that code.
+
 CACHE CONTRACT (kept in sync with dashboard/README.md)
 -------------------------------------------------------
     cache/corpus.csv              one row per document + structure descriptors
+                                   (embedding-based, plus morph_*-prefixed
+                                   versions if morphology is enabled)
     cache/ssm/<doc_id>.npy         (n, n) cosine self-similarity matrix
     cache/emb/<doc_id>.npy         (n, dim) L2-normalized sentence embeddings
     cache/curves/<doc_id>.npz      scalogram, novelty, nov1, local_red, scales, radii
-    cache/sentences/<doc_id>.json  [{"idx": int, "text": str}, ...]
+    cache/sentences/<doc_id>.json  [{"idx": int, "text": str}, ...] -- shared by
+                                   both signals, since both encode the same sentences
+    cache/morph_ssm/<doc_id>.npy   like ssm/, but over morphological features
+                                   (only written if morphology is enabled)
+    cache/morph_curves/<doc_id>.npz  like curves/, over morphological features
+    cache/morph_features/<doc_id>.npy  (n, n_morph_features) RAW per-sentence
+                                   morphological feature values -- e.g.
+                                   pos_prop_VERB per sentence -- for direct
+                                   inspection in the app, not just derived signals
     cache/redundant_pairs.json     candidate near-duplicate sentence pairs
     cache/flat_regions.json        candidate low-novelty stretches
-    cache/aggregates.json          corpus-level summaries (PCA, Cohen's d, ...)
+    cache/aggregates.json          corpus-level summaries (PCA, Cohen's d, ...),
+                                   plus a nested "morphology" key if enabled
     cache/human_index.npy          (n_human_sentences, dim) embeddings
     cache/human_index_meta.json    metadata parallel to human_index.npy
-    cache/config.json              the PipelineConfig this cache was built with
+    cache/config.json              the PipelineConfig this cache was built with,
+                                   plus morphology_feature_names if enabled
 
-EMBEDDINGS -- THE ONLY SWAP POINT
-----------------------------------
-The encoder is a required CLI argument (`--model-name`), not an environment
-variable: the exact command you ran is then self-documenting, and there is no
-hidden global deciding which model was used. Any HuggingFace Hub
+SIGNALS -- THE TWO SWAP POINTS
+--------------------------------
+The embedding encoder is a required CLI argument (`--model-name`), not an
+environment variable: the exact command you ran is then self-documenting, and
+there is no hidden global deciding which model was used. Any HuggingFace Hub
 sentence-embedding model works (e.g. "Qwen/Qwen3-Embedding-8B",
 "sentence-transformers/all-MiniLM-L6-v2"), loaded through
 infodynamics.embedding.Encoder.
@@ -66,11 +86,22 @@ embedding space. If you need to smoke-test the pipeline without downloading a
 large model, pass a small one (e.g. `--model-name
 sentence-transformers/all-MiniLM-L6-v2`) and `--limit 5`.
 
+Morphological/syntactic structure is a second, optional signal computed over
+the same sentences, via infodynamics.morphology.MorphologicalEncoder
+(UDPipe + textdescriptives). It's off by default; pass
+`--morphology-feature-group pos_proportions` (or any other value in
+MorphologicalEncoder.FEATURE_GROUPS) to enable it. spacy_udpipe.download()
+currently fails against LINDAT's repository (see run_morphology_demo.py's
+docstring for a working mirror); until that's fixed upstream, fetch a model
+manually and pass its path via `--morphology-model-path`.
+
 Run
 ---
     python dashboard/build_dashboard_artifacts.py --model-name Qwen/Qwen3-Embedding-8B
     python dashboard/build_dashboard_artifacts.py --model-name Qwen/Qwen3-Embedding-8B --device mps
     python dashboard/build_dashboard_artifacts.py --model-name sentence-transformers/all-MiniLM-L6-v2 --limit 5
+    python dashboard/build_dashboard_artifacts.py --model-name Qwen/Qwen3-Embedding-8B \\
+        --morphology-feature-group pos_proportions --morphology-model-path czech-pdt.udpipe
 """
 from __future__ import annotations
 
@@ -86,16 +117,18 @@ from typing import Optional, Sequence
 import numpy as np
 import pandas as pd
 
-# The multi-scale math (self-similarity matrix / scalogram / Foote novelty) is
-# a standalone prototype module at the repo root: the single source of truth,
-# shared with run_multiscale_demo.py. It is intentionally NOT part of the
-# infodynamics package yet (see that module's docstring).
+# Sentence splitting is a standalone, Czech-tuned module at the repo root
+# (abbreviation handling, heading/bullet-per-line splitting) with no package
+# equivalent -- shared with run_multiscale_demo.py. Using the *same* sentence
+# list for both signals below is what makes them directly comparable.
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
-from scalogram_foote_prototype import (  # noqa: E402
-    multiscale_novelty, rolling_gap_distance, scalogram, split_sentences, ssm,
-)
+from scalogram_foote_prototype import split_sentences  # noqa: E402
 from infodynamics.embedding import Encoder  # noqa: E402
+from infodynamics.morphology import MorphologicalEncoder  # noqa: E402
+from infodynamics.scalogram import (  # noqa: E402
+    FooteNovelty, Scalogram, rolling_gap_distance, self_similarity_matrix, structure_descriptors,
+)
 
 DASHBOARD_DIR = Path(__file__).resolve().parent
 DEFAULT_CACHE_DIR = DASHBOARD_DIR / "cache"
@@ -109,6 +142,11 @@ DESCRIPTOR_FEATURE_COLUMNS = [
     "mean_offdiag_sim", "p90_offdiag_sim", "dist_var_w5",
     "novelty_var", "mean_local_red", "boundary_rate",
 ]
+# Same descriptors, computed over morphological features instead of
+# embeddings -- written into corpus.csv only when morphology is enabled
+# (see run_pipeline()), so the Overview page's discriminator ranking can
+# surface both signals in one table without a mode switch.
+MORPH_DESCRIPTOR_FEATURE_COLUMNS = [f"morph_{c}" for c in DESCRIPTOR_FEATURE_COLUMNS]
 
 
 # --------------------------------------------------------------------------- #
@@ -165,6 +203,17 @@ class PipelineConfig:
         below this per-document quantile.
     limit : int or None
         only process the first N documents. For quick smoke runs.
+    morphology_feature_group : str or None
+        one of infodynamics.morphology.MorphologicalEncoder.FEATURE_GROUPS
+        (e.g. "pos_proportions"). Morphology is a second, optional signal --
+        None (the default) skips it entirely: no morph_* cache files are
+        written, and the app simply doesn't render morphology sections.
+    morphology_lang : str
+        UDPipe language code for the morphology signal.
+    morphology_model_path : str or None
+        path to a local .udpipe model file, see run_morphology_demo.py's
+        docstring for why this is currently needed (spacy_udpipe.download()
+        is broken against LINDAT's current repository layout).
     """
     model_name: str
     csv_path: Path = DEFAULT_CSV
@@ -186,6 +235,10 @@ class PipelineConfig:
     flat_quantile: float = 0.30
 
     limit: Optional[int] = None
+
+    morphology_feature_group: Optional[str] = None
+    morphology_lang: str = "cs"
+    morphology_model_path: Optional[str] = None
 
     def to_json_dict(self) -> dict:
         """JSON-serializable view of this config (Path -> str), written into
@@ -231,6 +284,14 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> PipelineConfig:
     parser.add_argument("--flat-quantile", type=float, default=0.30)
     parser.add_argument("--limit", type=int, default=None,
                         help="only process the first N documents (quick smoke run).")
+    parser.add_argument("--morphology-feature-group", default=None,
+                        choices=MorphologicalEncoder.FEATURE_GROUPS,
+                        help="enable the morphology signal (off by default) using this "
+                             "textdescriptives feature group, e.g. 'pos_proportions'.")
+    parser.add_argument("--morphology-lang", default="cs", help="UDPipe language code.")
+    parser.add_argument("--morphology-model-path", default=None,
+                        help="path to a local .udpipe model file (spacy_udpipe.download() "
+                             "is currently broken -- see run_morphology_demo.py's docstring).")
     args = parser.parse_args(argv)
 
     return PipelineConfig(
@@ -250,6 +311,9 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> PipelineConfig:
         flat_min_len=args.flat_min_len,
         flat_quantile=args.flat_quantile,
         limit=args.limit,
+        morphology_feature_group=args.morphology_feature_group,
+        morphology_lang=args.morphology_lang,
+        morphology_model_path=args.morphology_model_path,
     )
 
 
@@ -284,8 +348,8 @@ def slug(*parts: str) -> str:
 @dataclass
 class DocRecord:
     """One corpus document, populated in stages as it moves through the
-    pipeline: segment_corpus() fills `sentences`, assign_embeddings() later
-    fills `embeddings`."""
+    pipeline: segment_corpus() fills `sentences`, assign_features() later
+    fills `embeddings` and, if morphology is enabled, `morph_features`."""
     doc_id: str
     file_name: str
     author: str
@@ -293,6 +357,7 @@ class DocRecord:
     subproject: str
     sentences: list = field(default_factory=list)
     embeddings: Optional[np.ndarray] = None
+    morph_features: Optional[np.ndarray] = None
 
 
 def load_corpus(cfg: PipelineConfig) -> pd.DataFrame:
@@ -332,11 +397,11 @@ def segment_corpus(df: pd.DataFrame, cfg: PipelineConfig) -> tuple[list, list]:
     Returns
     -------
     docs : list[DocRecord]
-        `sentences` populated; `embeddings` still None (filled in later by
-        assign_embeddings()).
+        `sentences` populated; `embeddings`/`morph_features` still None
+        (filled in later by assign_features()).
     flat_sentences : list[str]
-        every sentence across every doc, in doc order. embed_corpus() encodes
-        this list directly; assign_embeddings() splits the result back out
+        every sentence across every doc, in doc order. encode_corpus() encodes
+        this list directly; assign_features() splits the result back out
         per document using each DocRecord's sentence count.
     """
     docs: list[DocRecord] = []
@@ -366,47 +431,48 @@ def segment_corpus(df: pd.DataFrame, cfg: PipelineConfig) -> tuple[list, list]:
 
 
 # --------------------------------------------------------------------------- #
-# embedding -- the only swap point
+# encoding -- the two swap points (embedding model, morphology feature group)
 # --------------------------------------------------------------------------- #
-def embed_corpus(sentences: list, cfg: PipelineConfig) -> np.ndarray:
-    """Embeds every sentence in the corpus with a single shared encoder call.
+def encode_corpus(encoder, sentences: list, label: str) -> np.ndarray:
+    """Encodes every sentence in the corpus with a single shared encoder call.
 
-    This is the ONLY place a model is loaded (and, on first use, downloaded).
-    Change embeddings by changing `cfg.model_name` -- everything downstream
-    (self-similarity matrix, scalogram, Foote novelty, nearest-neighbour
-    contrast search) only assumes L2-normalized (n_sentences, dim) row
-    vectors, regardless of which encoder produced them.
+    Used for both the embedding signal (infodynamics.embedding.Encoder) and,
+    if enabled, the morphology signal (infodynamics.morphology.MorphologicalEncoder)
+    -- both expose the same `.encode(texts) -> np.ndarray` interface, so this
+    is the only place either model is loaded (and, on first use, downloaded).
+    Everything downstream (self-similarity matrix, scalogram, Foote novelty)
+    only assumes a (n_sentences, n_features) matrix, regardless of which
+    encoder produced it or whether its rows are L2-normalized.
 
     Parameters
     ----------
+    encoder : object
+        anything exposing `.encode(texts: List[str]) -> np.ndarray`.
     sentences : list[str]
         as returned by segment_corpus()'s `flat_sentences`.
-    cfg : PipelineConfig
+    label : str
+        human-readable name for the progress message.
 
     Returns
     -------
-    np.ndarray of shape (len(sentences), dim), float32.
+    np.ndarray of shape (len(sentences), n_features), float32.
     """
-    print(f"Embedding {len(sentences)} sentences with '{cfg.model_name}' "
-          f"(device={cfg.device or 'model default'})...")
-    encoder = Encoder(cfg.model_name, device=cfg.device, batch_size=cfg.batch_size,
-                      normalize=True)
-    embeddings = encoder.encode(sentences)
-    return np.asarray(embeddings, dtype=np.float32)
+    print(f"Encoding {len(sentences)} sentences with {label}...")
+    return np.asarray(encoder.encode(sentences), dtype=np.float32)
 
 
-def assign_embeddings(docs: list, embeddings: np.ndarray) -> None:
-    """Splits the flat (total_sentences, dim) embedding matrix back into
-    per-document arrays, in place, on each DocRecord.embeddings.
+def assign_features(docs: list, features: np.ndarray, attr: str = "embeddings") -> None:
+    """Splits a flat (total_sentences, n_features) matrix back into
+    per-document arrays, in place, on each DocRecord's `attr` field.
 
-    Relies on `docs` and `embeddings` covering the same sentences in the same
+    Relies on `docs` and `features` covering the same sentences in the same
     order that segment_corpus() produced -- i.e. this must be called with the
-    exact `flat_sentences` list (or its embedding) that segment_corpus() returned.
+    exact `flat_sentences` list (or its encoding) that segment_corpus() returned.
     """
     offset = 0
     for doc in docs:
         n = len(doc.sentences)
-        doc.embeddings = embeddings[offset:offset + n]
+        setattr(doc, attr, features[offset:offset + n])
         offset += n
 
 
@@ -459,16 +525,21 @@ def _select_reference_novelty(novelty: np.ndarray, radii: list, ref_radius: int)
     return novelty[closest]
 
 
-def document_descriptors(emb: np.ndarray, S: np.ndarray, novelty_ref: np.ndarray,
+def document_descriptors(X: np.ndarray, S: np.ndarray, novelty_ref: np.ndarray,
                          local_red: np.ndarray) -> dict:
     """Cheap, interpretable per-document summary statistics: one row of
     corpus.csv, and the raw material for the Overview page's "most
     discriminating descriptors" ranking (see discriminative_ranking()).
 
+    Wraps infodynamics.scalogram.structure_descriptors (redundancy/dynamism)
+    with two extra dashboard-specific descriptors that have no package
+    equivalent: novelty variance and topic-shift "boundary rate".
+
     Parameters
     ----------
-    emb : np.ndarray of shape (n, dim)
-        this document's sentence embeddings.
+    X : np.ndarray of shape (n, n_features)
+        this document's per-sentence feature matrix (embeddings or
+        morphological features).
     S : np.ndarray of shape (n, n)
         self-similarity matrix.
     novelty_ref : np.ndarray of shape (n,)
@@ -476,40 +547,38 @@ def document_descriptors(emb: np.ndarray, S: np.ndarray, novelty_ref: np.ndarray
     local_red : np.ndarray of shape (n,)
         per-sentence local redundancy (see local_redundancy()).
     """
-    off_diag = S[np.triu_indices_from(S, k=1)]
-    gap5 = rolling_gap_distance(emb, 5)
+    desc = structure_descriptors(X, S=S, window_size=5)
+    desc["n_sentences"] = desc.pop("n_chunks")
     # a "peak" is a sentence more novel than both neighbours -- a topic-shift proxy.
     is_peak = (novelty_ref[1:-1] > novelty_ref[:-2]) & (novelty_ref[1:-1] > novelty_ref[2:])
-    return {
-        "n_sentences": int(emb.shape[0]),
-        "mean_offdiag_sim": float(off_diag.mean()),        # redundancy proxy (higher = more)
-        "p90_offdiag_sim": float(np.quantile(off_diag, 0.9)),
-        "dist_var_w5": float(np.nanvar(gap5)),              # topic-shift dynamism
-        "dist_mean_w5": float(np.nanmean(gap5)),
-        "novelty_var": float(np.var(novelty_ref)),
-        "mean_local_red": float(local_red.mean()),
-        "boundary_rate": float(int(is_peak.sum()) / max(1, emb.shape[0]) * 100),
-    }
+    desc["novelty_var"] = float(np.var(novelty_ref))
+    desc["mean_local_red"] = float(local_red.mean())
+    desc["boundary_rate"] = float(int(is_peak.sum()) / max(1, X.shape[0]) * 100)
+    return desc
 
 
-def analyze_document(doc, cfg: PipelineConfig) -> DocAnalysis:
+def analyze_document(X: np.ndarray, scales: Sequence[int], radii: Sequence[int],
+                     ref_radius: int, pair_min_gap: int) -> DocAnalysis:
     """Computes the self-similarity matrix, scalogram, multi-scale Foote
-    novelty, and scalar descriptors for one document's embeddings.
+    novelty, and scalar descriptors for one document's per-sentence feature
+    matrix. Signal-agnostic: called once for embeddings and, if morphology is
+    enabled, again for morphological features -- same math either way, via
+    infodynamics.scalogram.
 
     Parameters
     ----------
-    doc : DocRecord
-        with `embeddings` already populated (see assign_embeddings()).
-    cfg : PipelineConfig
+    X : np.ndarray of shape (n, n_features)
+        this document's per-sentence feature matrix.
+    scales, radii, ref_radius, pair_min_gap : see PipelineConfig.
     """
-    emb = doc.embeddings
-    S = ssm(emb)
-    scal, scales = scalogram(emb, cfg.scales)
-    novelty, radii = multiscale_novelty(S, cfg.radii)
-    novelty_ref = _select_reference_novelty(novelty, radii, cfg.ref_radius)
-    lr = local_redundancy(S, cfg.pair_min_gap)
-    desc = document_descriptors(emb, S, novelty_ref, lr)
-    return DocAnalysis(ssm=S, scalogram=scal, scales=scales, novelty=novelty, radii=radii,
+    S = self_similarity_matrix(X)
+    scal_model = Scalogram(scales=scales).fit(X)
+    foote_model = FooteNovelty(radii=radii).fit(X)
+    novelty_ref = _select_reference_novelty(foote_model.novelty_, foote_model.radii_, ref_radius)
+    lr = local_redundancy(S, pair_min_gap)
+    desc = document_descriptors(X, S, novelty_ref, lr)
+    return DocAnalysis(ssm=S, scalogram=scal_model.matrix_, scales=scal_model.scales_,
+                       novelty=foote_model.novelty_, radii=foote_model.radii_,
                        novelty_ref=novelty_ref, local_redundancy=lr, descriptors=desc)
 
 
@@ -595,6 +664,31 @@ def write_document_cache(cache_dir: Path, doc, analysis: DocAnalysis) -> None:
                   f, ensure_ascii=False)
 
 
+def write_morph_document_cache(cache_dir: Path, doc, analysis: DocAnalysis) -> None:
+    """Persists one document's morphology-signal artifacts under `cache_dir`.
+
+    Parallel to write_document_cache(), namespaced under morph_* so both
+    signals coexist in the same cache without collisions. No morph_sentences/
+    is needed -- cache/sentences/<doc_id>.json (written by
+    write_document_cache()) already covers both signals, since they encode
+    the same sentence list. cache/morph_features/<doc_id>.npy is the RAW
+    per-sentence feature matrix (e.g. pos_prop_VERB per sentence), read
+    directly by dashboard/bench_core.py's Bench.morph_features() for
+    inspection in the app -- not just the derived ssm/scalogram/novelty signals.
+    """
+    np.save(cache_dir / "morph_ssm" / f"{doc.doc_id}.npy", analysis.ssm.astype(np.float32))
+    np.save(cache_dir / "morph_features" / f"{doc.doc_id}.npy", doc.morph_features)
+    np.savez(
+        cache_dir / "morph_curves" / f"{doc.doc_id}.npz",
+        scalogram=analysis.scalogram.astype(np.float32),
+        novelty=analysis.novelty.astype(np.float32),
+        nov1=analysis.novelty_ref.astype(np.float32),
+        local_red=analysis.local_redundancy.astype(np.float32),
+        scales=np.array(analysis.scales),
+        radii=np.array(analysis.radii),
+    )
+
+
 # --------------------------------------------------------------------------- #
 # corpus-level aggregates
 # --------------------------------------------------------------------------- #
@@ -649,23 +743,21 @@ def discriminative_ranking(corpus: pd.DataFrame, feature_cols: list) -> list:
     return rows
 
 
-def build_corpus_aggregates(docs: list, analyses: list, corpus: pd.DataFrame,
-                            cfg: PipelineConfig) -> dict:
-    """Corpus-level summaries for the Overview / Author-signature dashboard
-    pages: per-author mean novelty profile, per-scale energy, novelty
-    autocorrelation ("rhythm"), and which descriptors most separate ai vs.
-    human writing.
+def _signal_aggregates(docs: list, analyses: list, scales: Sequence[int]) -> dict:
+    """Per-author mean novelty profile, per-scale energy, and novelty
+    autocorrelation ("rhythm") for one signal. Shared by
+    build_corpus_aggregates() for both the embedding and (if enabled)
+    morphology signals -- same aggregation, different `analyses`.
 
     Parameters
     ----------
     docs : list[DocRecord]
     analyses : list[DocAnalysis]
-        must be the same length as `docs`, in the same order (as produced by
-        the analyze_document() loop in run_pipeline()).
-    corpus : pd.DataFrame
-        one row per document, with the DESCRIPTOR_FEATURE_COLUMNS already
-        computed (see document_descriptors()).
-    cfg : PipelineConfig
+        must be the same length as `docs`, in the same order.
+    scales : Sequence[int]
+        the full requested scale list (cfg.scales) -- short documents drop
+        the largest scales (see Scalogram), so per-doc entries missing a
+        scale are left as NaN and skipped by nanmean below.
     """
     ref_profiles: dict = {}
     scale_energy: dict = {}
@@ -679,11 +771,8 @@ def build_corpus_aggregates(docs: list, analyses: list, corpus: pd.DataFrame,
         resampled = np.interp(np.linspace(0, 1, 100), np.linspace(0, 1, len(nov1)), nov1)
         ref_profiles.setdefault(doc.author, []).append(resampled)
 
-        # align this doc's scales to the FULL requested scale list -- short
-        # documents drop the largest scales (see scalogram()), so those
-        # entries are left as NaN and skipped by nanmean below.
-        se = np.full(len(cfg.scales), np.nan)
-        scale_position = {w: i for i, w in enumerate(cfg.scales)}
+        se = np.full(len(scales), np.nan)
+        scale_position = {w: i for i, w in enumerate(scales)}
         for wi, w in enumerate(analysis.scales):
             se[scale_position[w]] = analysis.scalogram[wi].var()
         scale_energy.setdefault(doc.author, []).append(se)
@@ -696,17 +785,47 @@ def build_corpus_aggregates(docs: list, analyses: list, corpus: pd.DataFrame,
         ac = ac / ac[0] if ac[0] else ac
         autocorr.setdefault(doc.author, []).append(np.pad(ac, (0, 31 - len(ac))))
 
-    discriminative = discriminative_ranking(
-        corpus, DESCRIPTOR_FEATURE_COLUMNS + ["dist_mean_w5", "n_sentences"])
-
     return {
         "ref_profile": {a: {"mean": np.mean(v, 0).tolist(), "std": np.std(v, 0).tolist()}
                        for a, v in ref_profiles.items()},
-        "scale_energy": {a: {"scales": list(cfg.scales), "mean": np.nanmean(v, 0).tolist()}
+        "scale_energy": {a: {"scales": list(scales), "mean": np.nanmean(v, 0).tolist()}
                         for a, v in scale_energy.items()},
         "autocorr": {a: np.mean(v, 0).tolist() for a, v in autocorr.items()},
-        "discriminative": discriminative,
     }
+
+
+def build_corpus_aggregates(docs: list, analyses: list, corpus: pd.DataFrame,
+                            cfg: PipelineConfig, morph_analyses: Optional[list] = None) -> dict:
+    """Corpus-level summaries for the Overview / Author-signature dashboard
+    pages: per-author mean novelty profile, per-scale energy, novelty
+    autocorrelation ("rhythm"), and which descriptors most separate ai vs.
+    human writing -- for the embedding signal, and again (nested under a
+    "morphology" key) for the morphology signal if enabled.
+
+    Parameters
+    ----------
+    docs : list[DocRecord]
+    analyses : list[DocAnalysis]
+        embedding-signal analyses, same length/order as `docs`.
+    corpus : pd.DataFrame
+        one row per document, with DESCRIPTOR_FEATURE_COLUMNS (and
+        MORPH_DESCRIPTOR_FEATURE_COLUMNS if morphology is enabled) already
+        computed (see document_descriptors()).
+    cfg : PipelineConfig
+    morph_analyses : list[DocAnalysis] or None, default=None
+        morphology-signal analyses, same length/order as `docs`. None (the
+        default) means morphology is disabled: no "morphology" key is added,
+        and its descriptor columns are excluded from the discriminator ranking.
+    """
+    aggregates = _signal_aggregates(docs, analyses, cfg.scales)
+
+    discriminator_cols = DESCRIPTOR_FEATURE_COLUMNS + ["dist_mean_w5", "n_sentences"]
+    if morph_analyses is not None:
+        aggregates["morphology"] = _signal_aggregates(docs, morph_analyses, cfg.scales)
+        discriminator_cols = discriminator_cols + MORPH_DESCRIPTOR_FEATURE_COLUMNS
+
+    aggregates["discriminative"] = discriminative_ranking(corpus, discriminator_cols)
+    return aggregates
 
 
 def build_human_index(docs: list, analyses: list) -> tuple:
@@ -741,9 +860,18 @@ def build_human_index(docs: list, analyses: list) -> tuple:
 # --------------------------------------------------------------------------- #
 def write_corpus_cache(cfg: PipelineConfig, corpus: pd.DataFrame, pairs: list,
                        flat_regions: list, aggregates: dict, human_vectors: np.ndarray,
-                       human_meta: list, n_docs: int, n_sentences: int, emb_dim: int) -> None:
+                       human_meta: list, n_docs: int, n_sentences: int, emb_dim: int,
+                       morphology_feature_names: Optional[list] = None) -> None:
     """Writes every corpus-level artifact (as opposed to the per-document
-    artifacts written by write_document_cache())."""
+    artifacts written by write_document_cache()/write_morph_document_cache()).
+
+    `morphology_feature_names` (the morphology signal's feature matrix column
+    names, fixed for the whole corpus since it's encoded in one shared call --
+    see encode_corpus()) is written into config.json only if morphology is
+    enabled; dashboard/bench_core.py's Bench.morphology_available() checks for
+    its presence, and Bench.morph_features() uses it to label the raw
+    per-sentence feature table.
+    """
     cache = cfg.cache_dir
     corpus.to_csv(cache / "corpus.csv", index=False)
     json.dump(pairs, open(cache / "redundant_pairs.json", "w"), ensure_ascii=False)
@@ -751,11 +879,11 @@ def write_corpus_cache(cfg: PipelineConfig, corpus: pd.DataFrame, pairs: list,
     json.dump(aggregates, open(cache / "aggregates.json", "w"), ensure_ascii=False)
     np.save(cache / "human_index.npy", human_vectors)
     json.dump(human_meta, open(cache / "human_index_meta.json", "w"), ensure_ascii=False)
-    json.dump(
-        {**cfg.to_json_dict(), "n_docs": n_docs, "n_sentences": n_sentences,
-         "emb_dim": emb_dim},
-        open(cache / "config.json", "w"), ensure_ascii=False, indent=2,
-    )
+    config = {**cfg.to_json_dict(), "n_docs": n_docs, "n_sentences": n_sentences,
+             "emb_dim": emb_dim}
+    if morphology_feature_names is not None:
+        config["morphology_feature_names"] = morphology_feature_names
+    json.dump(config, open(cache / "config.json", "w"), ensure_ascii=False, indent=2)
 
 
 # --------------------------------------------------------------------------- #
@@ -769,7 +897,11 @@ def run_pipeline(cfg: PipelineConfig) -> None:
     `main()` is a thin argparse wrapper around it.
     """
     cache = cfg.cache_dir
-    for sub in ["sentences", "ssm", "curves", "emb"]:
+    subdirs = ["sentences", "ssm", "curves", "emb"]
+    morphology_enabled = cfg.morphology_feature_group is not None
+    if morphology_enabled:
+        subdirs += ["morph_ssm", "morph_curves", "morph_features"]
+    for sub in subdirs:
         (cache / sub).mkdir(parents=True, exist_ok=True)
 
     print(f"Loading corpus from {cfg.csv_path} (authors={list(cfg.authors)})...")
@@ -777,37 +909,61 @@ def run_pipeline(cfg: PipelineConfig) -> None:
     docs, flat_sentences = segment_corpus(df, cfg)
     print(f"{len(docs)} docs, {len(flat_sentences)} sentences.")
 
-    embeddings = embed_corpus(flat_sentences, cfg)
-    assign_embeddings(docs, embeddings)
+    encoder = Encoder(cfg.model_name, device=cfg.device, batch_size=cfg.batch_size, normalize=True)
+    embeddings = encode_corpus(encoder, flat_sentences, f"'{cfg.model_name}'")
+    assign_features(docs, embeddings, attr="embeddings")
 
-    corpus_rows, all_pairs, all_flat, analyses = [], [], [], []
+    morph_feature_names = None
+    if morphology_enabled:
+        morph_encoder = MorphologicalEncoder(
+            cfg.morphology_feature_group, lang=cfg.morphology_lang, model_path=cfg.morphology_model_path)
+        morph_features = encode_corpus(
+            morph_encoder, flat_sentences, f"morphology/{cfg.morphology_feature_group}")
+        assign_features(docs, morph_features, attr="morph_features")
+        morph_feature_names = morph_encoder.feature_names_
+
+    corpus_rows, all_pairs, all_flat, analyses, morph_analyses = [], [], [], [], []
     for doc in docs:
-        analysis = analyze_document(doc, cfg)
+        analysis = analyze_document(doc.embeddings, cfg.scales, cfg.radii, cfg.ref_radius, cfg.pair_min_gap)
         analyses.append(analysis)
         write_document_cache(cache, doc, analysis)
+
+        row = {
+            "doc_id": doc.doc_id, "file_name": doc.file_name, "author": doc.author,
+            "project": doc.project, "subproject": doc.subproject, **analysis.descriptors,
+        }
+        if morphology_enabled:
+            morph_analysis = analyze_document(
+                doc.morph_features, cfg.scales, cfg.radii, cfg.ref_radius, cfg.pair_min_gap)
+            morph_analyses.append(morph_analysis)
+            write_morph_document_cache(cache, doc, morph_analysis)
+            row.update({f"morph_{k}": v for k, v in morph_analysis.descriptors.items()
+                       if k != "n_sentences"})
 
         all_pairs += extract_redundant_pairs(doc, analysis.ssm, cfg)
         all_flat += extract_flat_regions(doc, analysis.novelty_ref,
                                          analysis.local_redundancy, cfg)
-        corpus_rows.append({
-            "doc_id": doc.doc_id, "file_name": doc.file_name, "author": doc.author,
-            "project": doc.project, "subproject": doc.subproject, **analysis.descriptors,
-        })
+        corpus_rows.append(row)
         print(f"  ok  {doc.file_name}  ({analysis.descriptors['n_sentences']} sentences)")
 
     corpus = pd.DataFrame(corpus_rows)
     corpus = add_document_map(corpus, DESCRIPTOR_FEATURE_COLUMNS)
-    aggregates = build_corpus_aggregates(docs, analyses, corpus, cfg)
+    aggregates = build_corpus_aggregates(
+        docs, analyses, corpus, cfg, morph_analyses=morph_analyses if morphology_enabled else None)
     human_vectors, human_meta = build_human_index(docs, analyses)
 
     write_corpus_cache(
         cfg, corpus, all_pairs, all_flat, aggregates, human_vectors, human_meta,
         n_docs=len(docs), n_sentences=len(flat_sentences), emb_dim=int(embeddings.shape[1]),
+        morphology_feature_names=morph_feature_names,
     )
 
     print(f"\ncache -> {cache}")
     print(f"  docs={len(docs)}  pairs={len(all_pairs)}  flat={len(all_flat)}  "
           f"human_sents={len(human_vectors)}")
+    if morphology_enabled:
+        print(f"  morphology={cfg.morphology_feature_group}  "
+              f"n_morph_features={len(morph_feature_names)}")
     print("top discriminators:",
          [(d["feature"], d["cohens_d"]) for d in aggregates["discriminative"][:4]])
 

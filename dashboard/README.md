@@ -37,8 +37,36 @@ make sense over a real semantic embedding space. For a quick smoke run
 against a small local model instead of downloading the full-size one, add
 `--model-name sentence-transformers/all-MiniLM-L6-v2 --limit 5`.
 
-**Swap point:** `embed_corpus()` in `build_dashboard_artifacts.py` — the only
-function that touches the encoder model (via `infodynamics.embedding.Encoder`).
+**Swap points:** `encode_corpus()` in `build_dashboard_artifacts.py` — the
+only function that touches either model (`infodynamics.embedding.Encoder`
+for embeddings, `infodynamics.morphology.MorphologicalEncoder` for morphology).
+
+### Optional: morphology signal
+
+A second, optional signal — morphological/syntactic structure (e.g. POS-tag
+proportions per sentence) via UDPipe + textdescriptives — computed over the
+*same* sentences as the embedding signal, so the two are directly comparable.
+Off by default; nothing in the app or cache format changes if you don't use it.
+
+```bash
+pip install -e ".[morphology]"   # textdescriptives, spacy-udpipe
+python build_dashboard_artifacts.py --model-name Qwen/Qwen3-Embedding-8B \
+    --morphology-feature-group pos_proportions --morphology-model-path czech-pdt.udpipe
+```
+
+`--morphology-feature-group` is any value in
+`infodynamics.morphology.MorphologicalEncoder.FEATURE_GROUPS`. `spacy_udpipe.download()`
+currently fails against LINDAT's repository (an upstream issue, not specific
+to this dashboard) — see `run_morphology_demo.py`'s docstring for a working
+model mirror; `--morphology-model-path` points at a manually downloaded model.
+
+When enabled, the app additively shows a morphology section next to every
+existing embedding-based view (Document detail, Pair comparison, Overview's
+discriminator table, Author signature) — never a mode switch, and these
+sections simply don't render if the cache wasn't built with morphology
+enabled. Document detail also gets a raw per-sentence feature table
+(e.g. `pos_prop_VERB` per sentence) for direct inspection, since these
+features are human-interpretable, unlike embedding dimensions.
 
 ## The loop (Evidence bench page)
 

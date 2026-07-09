@@ -41,8 +41,11 @@ ss.setdefault("contrast", None)      # chosen contrast dict
 PAGES = ["Overview", "Author signature", "Document detail", "Pair comparison",
          "Evidence bench"]
 page = st.sidebar.radio("View", PAGES)
-st.sidebar.caption(f"cache: {b.config['n_docs']} docs · "
-                   f"{b.config['model_name']} emb · dim {b.config['emb_dim']}")
+caption = (f"cache: {b.config['n_docs']} docs · "
+          f"{b.config['model_name']} emb · dim {b.config['emb_dim']}")
+if b.morphology_available():
+    caption += f" · + morphology ({b.config['morphology_feature_group']})"
+st.sidebar.caption(caption)
 
 
 # --------------------------------------------------------------------------- #
@@ -57,17 +60,22 @@ def resampled_novelty_wall(author):
     return np.array(rows) if rows else np.zeros((0, 120)), labels
 
 
-def doc_panel_fig(doc_id):
+def doc_panel_fig(doc_id, signal="embedding"):
     """Full SSM / scalogram / Foote-novelty panel for one cached document —
     same three plots as run_multiscale_demo.plot_document_panel(), built from
-    the dashboard cache instead of a freshly-fitted model."""
+    the dashboard cache instead of a freshly-fitted model.
+
+    signal : {'embedding', 'morphology'} -- which cached signal to read.
+    """
     file_name = b.corpus.loc[b.corpus.doc_id == doc_id, "file_name"].iloc[0]
-    S = b.ssm(doc_id)
-    cur = b.curves(doc_id)
+    if signal == "morphology":
+        S, cur, label = b.morph_ssm(doc_id), b.morph_curves(doc_id), "morphology"
+    else:
+        S, cur, label = b.ssm(doc_id), b.curves(doc_id), "embedding"
 
     fig, axes = plt.subplots(3, 1, figsize=(5.5, 8.5))
     viz.plot_ssm(S, ax=axes[0])
-    axes[0].set_title(f"{file_name}  ·  {S.shape[0]} sentences\n"
+    axes[0].set_title(f"{file_name}  ·  {S.shape[0]} sentences  ·  {label}\n"
                       "Self-similarity matrix", fontsize=9)
     viz.plot_scalogram(cur["scalogram"], cur["scales"], ax=axes[1])
     axes[1].set_title("Scalogram (z-normalized rows)", fontsize=9)
@@ -113,13 +121,11 @@ if page == "Overview":
 elif page == "Author signature":
     st.title("Author signatures")
     agg = b.aggregates
-    c1, c2, c3 = st.columns(3)
 
-    with c1:
-        st.subheader("Mean novelty profile")
+    def novelty_profile_fig(ref_profile):
         fig, ax = plt.subplots(figsize=(5, 4))
         for a, col in [("ai", "#d1495b"), ("human", "#2e86ab")]:
-            p = agg["ref_profile"].get(a)
+            p = ref_profile.get(a)
             if not p:
                 continue
             m, sd = np.array(p["mean"]), np.array(p["std"])
@@ -127,7 +133,19 @@ elif page == "Author signature":
             ax.plot(x, m, color=col, label=a)
             ax.fill_between(x, m - sd, m + sd, color=col, alpha=0.15)
         ax.legend(); ax.set_xlabel("normalised position"); ax.set_ylabel("novelty")
-        st.pyplot(fig)
+        return fig
+
+    cols = st.columns(4 if b.morphology_available() else 3)
+    c1, c2, c3 = cols[0], cols[1], cols[2]
+
+    with c1:
+        st.subheader("Mean novelty profile")
+        st.pyplot(novelty_profile_fig(agg["ref_profile"]))
+
+    if b.morphology_available():
+        with cols[3]:
+            st.subheader(f"Mean novelty profile ({b.config['morphology_feature_group']})")
+            st.pyplot(novelty_profile_fig(agg["morphology"]["ref_profile"]))
 
     with c2:
         st.subheader("Scale-energy signature")
@@ -159,27 +177,42 @@ elif page == "Document detail":
     doc_ids = b.corpus.doc_id.unique()
     doc_names = b.corpus.drop_duplicates("doc_id").set_index("doc_id")["file_name"]
     doc = st.selectbox("Document", doc_ids, format_func=lambda d: doc_names[d])
-    S = b.ssm(doc); cur = b.curves(doc); sents = b.sentences(doc)
-    c1, c2 = st.columns(2)
-    with c1:
-        st.subheader("Self-similarity matrix")
-        fig, ax = plt.subplots(figsize=(5, 5))
-        ax.imshow(S, cmap="magma", vmin=0, vmax=np.quantile(S, 0.99))
-        st.pyplot(fig)
-    with c2:
-        st.subheader("Scalogram")
-        scal = cur["scalogram"]; scales = cur["scales"]
-        z = (scal - scal.mean(1, keepdims=True)) / (scal.std(1, keepdims=True) + 1e-9)
-        fig, ax = plt.subplots(figsize=(5, 2.4))
-        ax.imshow(z, aspect="auto", cmap="viridis", origin="lower")
-        ax.set_yticks(range(len(scales))); ax.set_yticklabels(scales)
-        st.pyplot(fig)
-        st.subheader("Foote novelty")
-        fig, ax = plt.subplots(figsize=(5, 2.4))
-        for k, r in enumerate(cur["radii"]):
-            ax.plot(cur["novelty"][k], lw=1, label=f"r={r}")
-        ax.legend(fontsize=6, ncol=5); st.pyplot(fig)
+    sents = b.sentences(doc)
 
+    def structure_section(ssm_fn, curves_fn):
+        S = ssm_fn(doc); cur = curves_fn(doc)
+        c1, c2 = st.columns(2)
+        with c1:
+            st.subheader("Self-similarity matrix")
+            fig, ax = plt.subplots(figsize=(5, 5))
+            ax.imshow(S, cmap="magma", vmin=0, vmax=np.quantile(S, 0.99))
+            st.pyplot(fig)
+        with c2:
+            st.subheader("Scalogram")
+            scal = cur["scalogram"]; scales = cur["scales"]
+            z = (scal - scal.mean(1, keepdims=True)) / (scal.std(1, keepdims=True) + 1e-9)
+            fig, ax = plt.subplots(figsize=(5, 2.4))
+            ax.imshow(z, aspect="auto", cmap="viridis", origin="lower")
+            ax.set_yticks(range(len(scales))); ax.set_yticklabels(scales)
+            st.pyplot(fig)
+            st.subheader("Foote novelty")
+            fig, ax = plt.subplots(figsize=(5, 2.4))
+            for k, r in enumerate(cur["radii"]):
+                ax.plot(cur["novelty"][k], lw=1, label=f"r={r}")
+            ax.legend(fontsize=6, ncol=5); st.pyplot(fig)
+
+    st.subheader("Embedding structure")
+    structure_section(b.ssm, b.curves)
+
+    if b.morphology_available():
+        st.divider()
+        st.subheader(f"Morphological structure ({b.config['morphology_feature_group']})")
+        structure_section(b.morph_ssm, b.morph_curves)
+
+        st.subheader("Per-sentence morphological features (raw)")
+        st.dataframe(b.morph_features(doc), use_container_width=True, hide_index=True)
+
+    st.divider()
     st.subheader("Redundant pairs in this document")
     dp = b.pairs[b.pairs.doc_id == doc].sort_values("sim", ascending=False)
     if len(dp):
@@ -216,11 +249,21 @@ elif page == "Pair comparison":
         doc_b = doc_picker("Document B", "cmp_b", "human")
 
     st.divider()
+    st.subheader("Embedding structure")
     panel_a, panel_b = st.columns(2)
     with panel_a:
         st.pyplot(doc_panel_fig(doc_a))
     with panel_b:
         st.pyplot(doc_panel_fig(doc_b))
+
+    if b.morphology_available():
+        st.divider()
+        st.subheader(f"Morphological structure ({b.config['morphology_feature_group']})")
+        morph_a, morph_b = st.columns(2)
+        with morph_a:
+            st.pyplot(doc_panel_fig(doc_a, signal="morphology"))
+        with morph_b:
+            st.pyplot(doc_panel_fig(doc_b, signal="morphology"))
 
 
 # ---- Evidence bench -------------------------------------------------------- #
