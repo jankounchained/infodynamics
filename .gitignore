@@ -1,6 +1,10 @@
 docs/source
 TMP*
 .vscode/
+cache/
+.claude
+corpus_overview.png
+_test*
 
 # From https://raw.githubusercontent.com/github/gitignore/main/Python.gitignore
 
