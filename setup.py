@@ -8,6 +8,7 @@ with open(os.path.join(directory, "README.md"), encoding="utf-8") as f:
 
 extras_require = {
     'embedding': ['sentence-transformers>=2.2'],
+    'morphology': ['textdescriptives>=2.7', 'spacy-udpipe>=1.0'],
     'clustering': ['tslearn>=0.6', 'scipy>=1.10'],
     'viz-projection': ['umap-learn>=0.5'],
     'test': ['pytest>=6.2.2', 'hypothesis>=6.87.0'],
