@@ -41,10 +41,15 @@ ss.setdefault("contrast", None)      # chosen contrast dict
 PAGES = ["Overview", "Author signature", "Document detail", "Pair comparison",
          "Evidence bench"]
 page = st.sidebar.radio("View", PAGES)
+
+morph_group = None
+if b.morphology_available():
+    morph_group = st.sidebar.selectbox("Morphology feature group", b.morphology_feature_groups())
+
 caption = (f"cache: {b.config['n_docs']} docs · "
           f"{b.config['model_name']} emb · dim {b.config['emb_dim']}")
 if b.morphology_available():
-    caption += f" · + morphology ({b.config['morphology_feature_group']})"
+    caption += f" · + morphology ({morph_group})"
 st.sidebar.caption(caption)
 
 
@@ -60,16 +65,17 @@ def resampled_novelty_wall(author):
     return np.array(rows) if rows else np.zeros((0, 120)), labels
 
 
-def doc_panel_fig(doc_id, signal="embedding"):
+def doc_panel_fig(doc_id, signal="embedding", feature_group=None):
     """Full SSM / scalogram / Foote-novelty panel for one cached document —
     same three plots as run_multiscale_demo.plot_document_panel(), built from
     the dashboard cache instead of a freshly-fitted model.
 
     signal : {'embedding', 'morphology'} -- which cached signal to read.
+    feature_group : which morphology feature group to read, if signal == 'morphology'.
     """
     file_name = b.corpus.loc[b.corpus.doc_id == doc_id, "file_name"].iloc[0]
     if signal == "morphology":
-        S, cur, label = b.morph_ssm(doc_id), b.morph_curves(doc_id), "morphology"
+        S, cur, label = b.morph_ssm(doc_id, feature_group), b.morph_curves(doc_id, feature_group), "morphology"
     else:
         S, cur, label = b.ssm(doc_id), b.curves(doc_id), "embedding"
 
@@ -144,8 +150,8 @@ elif page == "Author signature":
 
     if b.morphology_available():
         with cols[3]:
-            st.subheader(f"Mean novelty profile ({b.config['morphology_feature_group']})")
-            st.pyplot(novelty_profile_fig(agg["morphology"]["ref_profile"]))
+            st.subheader(f"Mean novelty profile ({morph_group})")
+            st.pyplot(novelty_profile_fig(agg["morphology"][morph_group]["ref_profile"]))
 
     with c2:
         st.subheader("Scale-energy signature")
@@ -206,11 +212,12 @@ elif page == "Document detail":
 
     if b.morphology_available():
         st.divider()
-        st.subheader(f"Morphological structure ({b.config['morphology_feature_group']})")
-        structure_section(b.morph_ssm, b.morph_curves)
+        st.subheader(f"Morphological structure ({morph_group})")
+        structure_section(lambda d: b.morph_ssm(d, morph_group),
+                          lambda d: b.morph_curves(d, morph_group))
 
         st.subheader("Per-sentence morphological features (raw)")
-        st.dataframe(b.morph_features(doc), use_container_width=True, hide_index=True)
+        st.dataframe(b.morph_features(doc, morph_group), use_container_width=True, hide_index=True)
 
     st.divider()
     st.subheader("Redundant pairs in this document")
@@ -258,12 +265,12 @@ elif page == "Pair comparison":
 
     if b.morphology_available():
         st.divider()
-        st.subheader(f"Morphological structure ({b.config['morphology_feature_group']})")
+        st.subheader(f"Morphological structure ({morph_group})")
         morph_a, morph_b = st.columns(2)
         with morph_a:
-            st.pyplot(doc_panel_fig(doc_a, signal="morphology"))
+            st.pyplot(doc_panel_fig(doc_a, signal="morphology", feature_group=morph_group))
         with morph_b:
-            st.pyplot(doc_panel_fig(doc_b, signal="morphology"))
+            st.pyplot(doc_panel_fig(doc_b, signal="morphology", feature_group=morph_group))
 
 
 # ---- Evidence bench -------------------------------------------------------- #

@@ -9,6 +9,7 @@ from spacy.tokens import Doc  # noqa: E402
 
 import infodynamics.pipeline as pipeline_module  # noqa: E402
 from infodynamics import MorphologicalEncoder  # noqa: E402
+from infodynamics.morphology import encode_all_feature_groups  # noqa: E402
 from infodynamics.pipeline import MultiscaleInfoDynamics  # noqa: E402
 
 
@@ -55,6 +56,24 @@ def test_encode_fills_missing_pos_tags_with_zero():
 
     assert matrix[1, verb_col] == 0.0  # noun-heavy chunk has no verbs
     assert matrix[0, noun_col] == 0.0  # verb-heavy chunk has no nouns
+
+
+def test_encode_all_feature_groups_returns_matrix_and_names_per_group():
+    result = encode_all_feature_groups(
+        ["Běžel a skákal.", "Kočka a pes."],
+        feature_groups=["pos_proportions"],
+        nlp=FakeNlp(_make_docs()),
+    )
+
+    matrix, names = result["pos_proportions"]
+    assert matrix.shape == (2, len(names))
+    assert "pos_prop_VERB" in names
+    assert "pos_prop_NOUN" in names
+
+
+def test_encode_all_feature_groups_rejects_invalid_group():
+    with pytest.raises(ValueError):
+        encode_all_feature_groups(["Nejaky text."], feature_groups=["not_a_real_group"])
 
 
 class FakeMorphologicalEncoder:
