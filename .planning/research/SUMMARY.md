@@ -125,7 +125,7 @@ Research converges on a **5-step extraction sequence** with a test-green checkpo
 ## Sources
 
 ### Primary (HIGH confidence)
-- `.planning/codebase/{ARCHITECTURE,STACK,STRUCTURE,CONCERNS,TESTING}.md` — first-party codebase analysis
+- Codebase map under `.planning/codebase/` (ARCHITECTURE, STACK, STRUCTURE, CONCERNS, TESTING) — first-party codebase analysis
 - `.planning/PROJECT.md` — milestone scope, constraints, key decisions
 - Direct source reading (Pitfalls): `time_series.py`, `pipeline.py`, `scalogram.py`, `clustering/cluster.py`, `embedding.py`, `morphology.py`, `__init__.py`, `setup.py`, `tests/test_manifest.py`
 - scikit-learn.org — "Developing scikit-learn estimators", `BaseEstimator`/`TransformerMixin`/`Pipeline`/`clone` API
