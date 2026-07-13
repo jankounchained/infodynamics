@@ -73,17 +73,35 @@ Explicitly excluded this milestone. Documented to prevent scope creep.
 
 ## Traceability
 
-Populated during roadmap creation — each requirement maps to exactly one phase.
+Each requirement maps to exactly one phase.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| _(filled by roadmapper)_ | — | Pending |
+| QA-01 | Phase 1 | Pending |
+| RM-01 | Phase 1 | Pending |
+| RM-02 | Phase 1 | Pending |
+| RM-03 | Phase 1 | Pending |
+| RM-04 | Phase 1 | Pending |
+| RM-05 | Phase 1 | Pending |
+| TEXT-01 | Phase 2 | Pending |
+| TEXT-03 | Phase 2 | Pending |
+| CORE-01 | Phase 2 | Pending |
+| CORE-02 | Phase 3 | Pending |
+| TEXT-02 | Phase 3 | Pending |
+| API-01 | Phase 3 | Pending |
+| API-02 | Phase 3 | Pending |
+| QA-02 | Phase 3 | Pending |
+| QA-03 | Phase 3 | Pending |
+| API-03 | Phase 4 | Pending |
+| API-04 | Phase 4 | Pending |
+| CORE-03 | Phase 5 | Pending |
+| QA-04 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 19 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 19 ⚠️
+- Mapped to phases: 19 (5 phases)
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-07-13*
-*Last updated: 2026-07-13 after initial definition*
+*Last updated: 2026-07-13 after roadmap creation*
