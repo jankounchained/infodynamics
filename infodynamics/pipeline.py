@@ -22,7 +22,8 @@ class InfoDynamics(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        model_name: str,
+        model_name: Optional[str] = None,
+        encoder: Optional[object] = None,
         segment_level: Level = "sentence",
         chunk_size: int = 1,
         measure: Union[str, Callable] = "cosine",
@@ -36,8 +37,14 @@ class InfoDynamics(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        model_name : str
+        model_name : str or None, default=None
             name of a HuggingFace Hub encoder model, e.g. "sentence-transformers/all-MiniLM-L6-v2".
+            Ignored if `encoder` is given. One of `model_name` or `encoder` is required.
+
+        encoder : object or None, default=None
+            a pre-built encoder exposing `.encode(texts: List[str]) -> np.ndarray`, e.g.
+            infodynamics.embedding.Encoder or infodynamics.morphology.MorphologicalEncoder.
+            Takes precedence over `model_name` if given.
 
         segment_level : {'word', 'sentence', 'paragraph'}, default='sentence'
             base unit to split the text document into.
@@ -64,6 +71,7 @@ class InfoDynamics(BaseEstimator, TransformerMixin):
             number of chunks to embed per encoder batch.
         """
         self.model_name = model_name
+        self.encoder = encoder
         self.segment_level = segment_level
         self.chunk_size = chunk_size
         self.measure = measure
@@ -89,8 +97,11 @@ class InfoDynamics(BaseEstimator, TransformerMixin):
         self : object
             instance with estimated signal.
         """
+        if self.encoder is None and self.model_name is None:
+            raise ValueError("One of 'model_name' or 'encoder' is required.")
+
         chunks = segment(text, level=self.segment_level, chunk_size=self.chunk_size)
-        encoder = Encoder(self.model_name, device=self.device, batch_size=self.batch_size)
+        encoder = self.encoder if self.encoder is not None else Encoder(self.model_name, device=self.device, batch_size=self.batch_size)
         embeddings = encoder.encode([chunk.text for chunk in chunks])
 
         wrd = WindowedRollingDistance(
@@ -154,7 +165,8 @@ class MultiscaleInfoDynamics(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        model_name: str,
+        model_name: Optional[str] = None,
+        encoder: Optional[object] = None,
         segment_level: Level = "sentence",
         chunk_size: int = 1,
         scales: Sequence[int] = (2, 3, 5, 8, 13, 21),
@@ -167,8 +179,14 @@ class MultiscaleInfoDynamics(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        model_name : str
+        model_name : str or None, default=None
             name of a HuggingFace Hub encoder model, e.g. "sentence-transformers/all-MiniLM-L6-v2".
+            Ignored if `encoder` is given. One of `model_name` or `encoder` is required.
+
+        encoder : object or None, default=None
+            a pre-built encoder exposing `.encode(texts: List[str]) -> np.ndarray`, e.g.
+            infodynamics.embedding.Encoder or infodynamics.morphology.MorphologicalEncoder.
+            Takes precedence over `model_name` if given.
 
         segment_level : {'word', 'sentence', 'paragraph'}, default='sentence'
             base unit to split the text document into.
@@ -192,6 +210,7 @@ class MultiscaleInfoDynamics(BaseEstimator, TransformerMixin):
             number of chunks to embed per encoder batch.
         """
         self.model_name = model_name
+        self.encoder = encoder
         self.segment_level = segment_level
         self.chunk_size = chunk_size
         self.scales = scales
@@ -218,8 +237,11 @@ class MultiscaleInfoDynamics(BaseEstimator, TransformerMixin):
         self : object
             instance with estimated multi-scale structure.
         """
+        if self.encoder is None and self.model_name is None:
+            raise ValueError("One of 'model_name' or 'encoder' is required.")
+
         chunks = segment(text, level=self.segment_level, chunk_size=self.chunk_size)
-        encoder = Encoder(self.model_name, device=self.device, batch_size=self.batch_size)
+        encoder = self.encoder if self.encoder is not None else Encoder(self.model_name, device=self.device, batch_size=self.batch_size)
         embeddings = encoder.encode([chunk.text for chunk in chunks])
 
         scalogram = Scalogram(scales=self.scales, measure=self.measure).fit(embeddings)

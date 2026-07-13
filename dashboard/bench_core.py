@@ -70,6 +70,31 @@ class Bench:
     def curves(self, doc_id):
         return np.load(f"{self.cache}/curves/{doc_id}.npz")
 
+    # ---- morphology signal (optional -- see build_dashboard_artifacts.py) - #
+    def morphology_available(self):
+        return bool(self.config.get("morphology_feature_groups"))
+
+    def morphology_feature_groups(self):
+        return list(self.config.get("morphology_feature_groups", []))
+
+    def morph_ssm(self, doc_id, feature_group):
+        return np.load(f"{self.cache}/morph_ssm/{feature_group}/{doc_id}.npy")
+
+    def morph_curves(self, doc_id, feature_group):
+        return np.load(f"{self.cache}/morph_curves/{feature_group}/{doc_id}.npz")
+
+    def morph_features(self, doc_id, feature_group):
+        """Per-sentence raw morphological feature values for one feature
+        group (e.g. pos_prop_VERB per sentence), joined with sentence text --
+        for direct inspection in the app, not just the derived
+        ssm/scalogram/novelty signals."""
+        X = np.load(f"{self.cache}/morph_features/{feature_group}/{doc_id}.npy")
+        names = self.config["morphology_feature_names"][feature_group]
+        df = pd.DataFrame(X, columns=names)
+        df.insert(0, "text", [s["text"] for s in self.sentences(doc_id)])
+        df.insert(0, "idx", range(len(df)))
+        return df
+
     def context(self, doc_id, idx, window=1):
         s = self.sentences(doc_id)
         a, b = max(0, idx-window), min(len(s), idx+window+1)
