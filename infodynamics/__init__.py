@@ -1,3 +1,5 @@
+__version__ = "0.1.0"
+
 from infodynamics.clustering import SignalClusterer
 from infodynamics.morphology import MorphologicalEncoder
 from infodynamics.pipeline import InfoDynamics, MultiscaleInfoDynamics

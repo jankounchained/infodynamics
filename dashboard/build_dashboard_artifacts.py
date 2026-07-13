@@ -74,6 +74,11 @@ CACHE CONTRACT (kept in sync with dashboard/README.md)
     cache/config.json              the PipelineConfig this cache was built with,
                                    plus morphology_feature_groups/morphology_feature_names
                                    if enabled
+    cache/manifest.json            provenance for shipping this cache (pipeline
+                                   version, config hash, corpus hash, model
+                                   identities, per-file checksums) -- see
+                                   infodynamics.cache_contract and
+                                   infodynamics/shipping.py (pack/pull/verify)
 
 SIGNALS -- THE TWO SWAP POINTS
 --------------------------------
@@ -131,6 +136,8 @@ import pandas as pd
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 from scalogram_foote_prototype import split_sentences  # noqa: E402
+from infodynamics import __version__ as PIPELINE_VERSION  # noqa: E402
+from infodynamics import cache_contract  # noqa: E402
 from infodynamics.embedding import Encoder  # noqa: E402
 from infodynamics.morphology import MorphologicalEncoder, encode_all_feature_groups  # noqa: E402
 from infodynamics.scalogram import (  # noqa: E402
@@ -880,7 +887,7 @@ def build_human_index(docs: list, analyses: list) -> tuple:
 def write_corpus_cache(cfg: PipelineConfig, corpus: pd.DataFrame, pairs: list,
                        flat_regions: list, aggregates: dict, human_vectors: np.ndarray,
                        human_meta: list, n_docs: int, n_sentences: int, emb_dim: int,
-                       morphology_feature_names: Optional[dict] = None) -> None:
+                       morphology_feature_names: Optional[dict] = None) -> dict:
     """Writes every corpus-level artifact (as opposed to the per-document
     artifacts written by write_document_cache()/write_morph_document_cache()).
 
@@ -891,6 +898,10 @@ def write_corpus_cache(cfg: PipelineConfig, corpus: pd.DataFrame, pairs: list,
     dashboard/bench_core.py's Bench.morphology_available() checks for the
     latter's presence, and Bench.morph_features() uses the former to label
     the raw per-sentence feature table for a given group.
+
+    Returns the config dict just written, so run_pipeline() can pass the
+    exact same object into write_manifest() (config_hash is computed over
+    this, not a re-derived copy).
     """
     cache = cfg.cache_dir
     corpus.to_csv(cache / "corpus.csv", index=False)
@@ -905,6 +916,42 @@ def write_corpus_cache(cfg: PipelineConfig, corpus: pd.DataFrame, pairs: list,
         config["morphology_feature_groups"] = list(morphology_feature_names)
         config["morphology_feature_names"] = morphology_feature_names
     json.dump(config, open(cache / "config.json", "w"), ensure_ascii=False, indent=2)
+    return config
+
+
+def write_manifest(cfg: PipelineConfig, config: dict) -> None:
+    """Writes cache/manifest.json: provenance for a shipped cache bundle --
+    file checksums, a normalized config hash, corpus hash, and model
+    identities -- so infodynamics-pack/-pull/-verify (infodynamics/shipping.py)
+    can confirm a bundle is complete and byte-identical after a round trip.
+    The hashing/normalization rules live in infodynamics.cache_contract,
+    shared with those commands so builder and checker never disagree.
+
+    Must run after write_corpus_cache() (and every other cache write): `files`
+    is a checksum walk of cache_dir taken at call time.
+    """
+    models = {
+        "embedding": {
+            "name": cfg.model_name,
+            "revision": cache_contract.resolve_hf_revision(cfg.model_name),
+        },
+    }
+    if cfg.morphology_enabled and cfg.morphology_model_path:
+        models["morphology_udpipe"] = {
+            "path": cfg.morphology_model_path,
+            "sha256": cache_contract.sha256_file(Path(cfg.morphology_model_path)),
+        }
+    manifest = cache_contract.build_manifest(
+        pipeline_version=PIPELINE_VERSION,
+        cache_dir=cfg.cache_dir,
+        corpus_path=cfg.csv_path,
+        config=config,
+        n_docs=config["n_docs"],
+        n_sentences=config["n_sentences"],
+        models=models,
+        repo_dir=REPO_ROOT,
+    )
+    json.dump(manifest, open(cfg.cache_dir / "manifest.json", "w"), ensure_ascii=False, indent=2)
 
 
 # --------------------------------------------------------------------------- #
@@ -982,11 +1029,12 @@ def run_pipeline(cfg: PipelineConfig) -> None:
         docs, analyses, corpus, cfg, morph_analyses=morph_analyses)
     human_vectors, human_meta = build_human_index(docs, analyses)
 
-    write_corpus_cache(
+    config = write_corpus_cache(
         cfg, corpus, all_pairs, all_flat, aggregates, human_vectors, human_meta,
         n_docs=len(docs), n_sentences=len(flat_sentences), emb_dim=int(embeddings.shape[1]),
         morphology_feature_names=morph_feature_names,
     )
+    write_manifest(cfg, config)
 
     print(f"\ncache -> {cache}")
     print(f"  docs={len(docs)}  pairs={len(all_pairs)}  flat={len(all_flat)}  "
