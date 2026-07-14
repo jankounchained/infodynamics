@@ -182,12 +182,37 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
                 }
             )
 
-        self.signal = signal
+        self.signal_ = signal
         return self
 
-    def fit_transform(self, X: ArrayLike, y=None) -> dict[str, np.ndarray]:
+    def transform(self, X: ArrayLike, y=None) -> np.ndarray:
         """
-        Fit to data, return dict with signal.
+        Recompute fresh from X (same code path as fit()) and return the
+        stacked novelty/transience/resonance signal.
+
+        Parameters
+        ----------
+        X : {array-like, pd.DataFrame, List[List[float]]}
+            of shape (n_samples, n_features)
+
+        y : Ignored
+            Not used, present for API consistency by convention.
+
+        Returns
+        -------
+        X_new : ndarray of shape (n_samples, 3)
+            Stacked [novelty, transience, resonance] columns. The full
+            signal dict (including *_sd keys when estimate_error=True) is
+            available on the fitted attribute self.signal_.
+        """
+        self.fit(X)
+        return np.column_stack(
+            [self.signal_["N_hat"], self.signal_["T_hat"], self.signal_["R_hat"]]
+        )
+
+    def fit_transform(self, X: ArrayLike, y=None) -> np.ndarray:
+        """
+        Fit to data, return the stacked novelty/transience/resonance array.
 
         Parameters
         ----------
@@ -200,8 +225,12 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X_new : ndarray array of shape (n_samples, n_features_new)
-            Transformed array.
+        X_new : ndarray of shape (n_samples, 3)
+            Stacked [novelty, transience, resonance] columns. The full
+            signal dict (including *_sd keys when estimate_error=True) is
+            available on the fitted attribute self.signal_.
         """
         self.fit(X)
-        return self.signal
+        return np.column_stack(
+            [self.signal_["N_hat"], self.signal_["T_hat"], self.signal_["R_hat"]]
+        )
