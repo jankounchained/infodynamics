@@ -6,6 +6,9 @@ import re
 from dataclasses import dataclass
 from typing import List, Literal, Tuple
 
+from sklearn.base import BaseEstimator, TransformerMixin
+from typing_extensions import Self
+
 Level = Literal["word", "sentence", "paragraph"]
 
 
@@ -104,3 +107,35 @@ def segment(text: str, level: Level = "sentence", chunk_size: int = 1) -> List[C
         chunks.append(Chunk(text=text[start:end], start=start, end=end))
 
     return chunks
+
+
+class TextSegmenter(BaseEstimator, TransformerMixin):
+    """Splits raw text into chunks, wrapping the module-level segment().
+
+    transform(text) returns the plain chunk texts (List[str]), which slot
+    directly into Encoder/MorphologicalEncoder's List[str] input. Position
+    info (start/end spans) is preserved on the fitted attribute chunks_
+    (List[Chunk]) rather than dropped.
+    """
+
+    def __init__(self, level: Level = "sentence", chunk_size: int = 1):
+        """
+
+        Parameters
+        ----------
+        level : {'word', 'sentence', 'paragraph'}, default='sentence'
+            the base unit to split text into.
+
+        chunk_size : int, default=1
+            number of consecutive base units to group into a single chunk.
+        """
+        self.level = level
+        self.chunk_size = chunk_size
+
+    def fit(self, text: str, y=None) -> Self:
+        self.chunks_ = segment(text, level=self.level, chunk_size=self.chunk_size)
+        return self
+
+    def transform(self, text: str, y=None) -> List[str]:
+        self.fit(text)
+        return [chunk.text for chunk in self.chunks_]
