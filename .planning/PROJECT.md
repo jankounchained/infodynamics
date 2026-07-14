@@ -22,12 +22,12 @@ One clean, sklearn-compatible library that computes novelty/structure signals fr
 - ✓ HuggingFace sentence-embedding encoder — existing
 - ✓ Morphological encoder (UDPipe + textdescriptives) — existing
 - ✓ sklearn-style `fit` / `fit_transform` estimators (`BaseEstimator` / `TransformerMixin`, stateless transformers) — existing
+- ✓ Golden-output baseline (all six estimators) captured pre-refactor and wired into a permanent drift-detection pytest gate; dashboard/`cache_contract.py`/`shipping.py`/`build_dashboard_artifacts.py` and related artifact-serving code removed from the repo, preserved in git history — Validated in Phase 01: Baseline & Removal
 
 ### Active
 
 <!-- This milestone: extract a clean, modality-agnostic core. -->
 
-- [ ] Remove the dashboard, `cache_contract.py`, `shipping.py`, `build_dashboard_artifacts.py`, and related artifact-serving code from this repo (preserved in git history before deletion)
 - [ ] Reorganize surviving code into a **modality-agnostic analysis core** + an **`infodynamics.text` on-ramp** subpackage (segmentation, embedding, morphology)
 - [ ] Analysis primitives operate on generic numeric time series / embeddings, independent of text
 - [ ] Design a clean, intentional **public API** (curated top-level exports) for the reorganized package
@@ -88,4 +88,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-13 after initialization*
+*Last updated: 2026-07-14 after Phase 01 (Baseline & Removal) completion*
