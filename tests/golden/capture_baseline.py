@@ -16,6 +16,11 @@ import json
 import os
 
 import numpy as np
+import pytest
+
+pytest.importorskip("sentence_transformers")
+pytest.importorskip("tslearn")
+pytest.importorskip("scipy")
 
 from infodynamics import (
     FooteNovelty,
