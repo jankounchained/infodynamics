@@ -108,6 +108,15 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
                     f"Invalid value for parameter 'relative_to': {relative_to}. Must be 'past' or 'future'."
                 )
 
+            if self.window_size == 0:
+                # No context available by definition (window_size=0):
+                # fall back to the configured constant rather than
+                # computing a distance against an empty comparison set,
+                # which previously raised (sklearn measures) or silently
+                # produced NaN (mean of an empty array).
+                H_hat[i], H_sd[i] = self.inplace_constant, 0.0
+                continue
+
             if submat.shape[0] == self.window_size:
                 # use broadcasting to calculate js_dist for all elements in submat
                 tmp = self.measure_(x, submat)
