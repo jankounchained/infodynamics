@@ -5,6 +5,8 @@ syntactic features (via textdescriptives) as a numeric matrix.
 from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
+from sklearn.base import BaseEstimator, TransformerMixin
+from typing_extensions import Self
 
 _PIPELINE_CACHE: Dict[Tuple[str, str, Optional[str]], "object"] = {}
 
@@ -144,7 +146,7 @@ def encode_all_feature_groups(
     return result
 
 
-class MorphologicalEncoder:
+class MorphologicalEncoder(BaseEstimator, TransformerMixin):
     """Parses text chunks with a local UDPipe model and extracts one
     textdescriptives feature group as a numeric matrix."""
 
@@ -181,6 +183,12 @@ class MorphologicalEncoder:
         self.lang = lang
         self.model_path = model_path
         self.nlp = nlp
+
+    def fit(self, texts: List[str], y=None) -> Self:
+        return self
+
+    def transform(self, texts: List[str], y=None) -> np.ndarray:
+        return self.encode(texts)
 
     def encode(self, texts: List[str]) -> np.ndarray:
         from textdescriptives import extract_df
