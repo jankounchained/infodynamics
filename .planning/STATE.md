@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 02
-current_phase_name: reorganize-into-core-text-on-ramp
+current_phase: 3
+current_phase_name: Decouple the Pipeline
 status: verifying
 stopped_at: Phase 2 context gathered
-last_updated: "2026-07-14T10:37:34.887Z"
+last_updated: "2026-07-14T10:48:21.731Z"
 last_activity: 2026-07-14
-last_activity_desc: Phase 02 execution started
+last_activity_desc: Phase 02 complete, transitioned to Phase 3
 progress:
   total_phases: 5
   completed_phases: 2
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 
 ## Current Position
 
-Phase: 02 (reorganize-into-core-text-on-ramp) — EXECUTING
-Plan: 2 of 2
+Phase: 3 — Decouple the Pipeline
+Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-07-14 — Phase 02 execution started
+Last activity: 2026-07-14 — Phase 02 complete, transitioned to Phase 3
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -39,7 +39,7 @@ Progress: [░░░░░░░░░░] 0%
 
 **Velocity:**
 
-- Total plans completed: 4
+- Total plans completed: 6
 - Average duration: - min
 - Total execution time: 0 hours
 
@@ -48,6 +48,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 4 | - | - |
+| 02 | 2 | - | - |
 
 **Recent Trend:**
 
