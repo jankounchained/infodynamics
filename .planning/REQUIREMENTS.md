@@ -18,7 +18,7 @@ Requirements for this milestone: extract a lean, modality-agnostic, sklearn-comp
 ### Core (modality-agnostic)
 
 - [x] **CORE-01**: Core analysis modules (`metrics`, `time_series`, `scalogram`, `clustering/`, `viz`, `util`, `pipeline`) live at the top-level `infodynamics` namespace and import nothing from `infodynamics.text`
-- [ ] **CORE-02**: Core estimators (`InfoDynamics`, `MultiscaleInfoDynamics`, `WindowedRollingDistance`, `Scalogram`, `FooteNovelty`, `SignalClusterer`) accept numeric `ndarray` / array-like input and never accept raw text or `Chunk` objects
+- [x] **CORE-02**: Core estimators (`InfoDynamics`, `MultiscaleInfoDynamics`, `WindowedRollingDistance`, `Scalogram`, `FooteNovelty`, `SignalClusterer`) accept numeric `ndarray` / array-like input and never accept raw text or `Chunk` objects
 - [ ] **CORE-03**: A core-only path (numeric array in → signals out) runs with only the required core dependencies installed (no text or heavy extras present)
 
 ### Text on-ramp
@@ -29,7 +29,7 @@ Requirements for this milestone: extract a lean, modality-agnostic, sklearn-comp
 
 ### Public API & sklearn composability
 
-- [ ] **API-01**: Every public estimator implements `fit` / `transform` / `fit_transform` with working `get_params` / `set_params` and passes an `sklearn.base.clone()` round-trip
+- [x] **API-01**: Every public estimator implements `fit` / `transform` / `fit_transform` with working `get_params` / `set_params` and passes an `sklearn.base.clone()` round-trip
 - [ ] **API-02**: The text on-ramp → analysis flow composes end-to-end in an `sklearn.pipeline.Pipeline` (`fit_transform` runs; `set_params(step__param=...)` takes effect), verified by `tests/test_pipeline_composition.py`
 - [ ] **API-03**: Public API is curated — explicit `__all__` at `infodynamics` and `infodynamics.text`; the core `__init__.py` never imports from `.text`
 - [ ] **API-04**: A canonical example demonstrates both core-only (`ndarray` in) use and full `Pipeline` composition; a CHANGELOG/migration note maps old→new import paths for moved symbols
@@ -37,7 +37,7 @@ Requirements for this milestone: extract a lean, modality-agnostic, sklearn-comp
 ### Quality & correctness
 
 - [x] **QA-01**: A golden-output baseline is captured before any refactor; core numerical outputs (`novelty`/`transience`/`resonance`, SSM, scalogram, Foote novelty, descriptors, cluster labels/barycenters) match it at milestone completion (no numerical drift)
-- [ ] **QA-02**: Known bugs are fixed, each as its own labeled commit: `averaging_weigts` → `averaging_weights` rename; `WindowedRollingDistance.__init__` stores params verbatim with validation moved to `fit`; `_MODEL_CACHE` keyed by `device` with no in-place mutation; `_validate_data` completed
+- [x] **QA-02**: Known bugs are fixed, each as its own labeled commit: `averaging_weigts` → `averaging_weights` rename; `WindowedRollingDistance.__init__` stores params verbatim with validation moved to `fit`; `_MODEL_CACHE` keyed by `device` with no in-place mutation; `_validate_data` completed
 - [ ] **QA-03**: Test debt is resolved: empty stubs (`test_transience_calculation`, `test_negative_values_in_input_data`, `test_very_small_numbers`) are implemented; the `test_window_size` assertion is corrected to match actual output
 - [ ] **QA-04**: The full `pytest` suite passes against the reorganized package; the collected test count is reconciled against the pre-refactor baseline (no silent coverage loss beyond the known-removed `test_manifest.py`)
 
@@ -86,11 +86,11 @@ Each requirement maps to exactly one phase.
 | TEXT-01 | Phase 2 | Complete |
 | TEXT-03 | Phase 2 | Complete |
 | CORE-01 | Phase 2 | Complete |
-| CORE-02 | Phase 3 | Pending |
+| CORE-02 | Phase 3 | Complete |
 | TEXT-02 | Phase 3 | Pending |
-| API-01 | Phase 3 | Pending |
+| API-01 | Phase 3 | Complete |
 | API-02 | Phase 3 | Pending |
-| QA-02 | Phase 3 | Pending |
+| QA-02 | Phase 3 | Complete |
 | QA-03 | Phase 3 | Pending |
 | API-03 | Phase 4 | Pending |
 | API-04 | Phase 4 | Pending |

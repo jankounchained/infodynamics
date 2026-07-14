@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 3
-current_phase_name: Decouple the Pipeline
+current_phase: 03
+current_phase_name: decouple-the-pipeline
 status: executing
-stopped_at: Phase 3 context gathered
-last_updated: "2026-07-14T11:51:52.589Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-07-14T12:04:26.526Z"
 last_activity: 2026-07-14
-last_activity_desc: Phase 02 complete, transitioned to Phase 3
+last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 13
+  completed_plans: 7
   percent: 40
 ---
 
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-13)
 
 **Core value:** One clean, sklearn-compatible library that computes novelty/structure signals from any numeric time series — with text as a first-class but separable on-ramp — free of dashboard and case-study baggage.
-**Current focus:** Phase 02 — reorganize-into-core-text-on-ramp
+**Current focus:** Phase 03 — decouple-the-pipeline
 
 ## Current Position
 
-Phase: 3 — Decouple the Pipeline
-Plan: Not started
+Phase: 03 (decouple-the-pipeline) — EXECUTING
+Plan: 2 of 7
 Status: Ready to execute
-Last activity: 2026-07-14 — Phase 02 complete, transitioned to Phase 3
+Last activity: 2026-07-14 — Phase 03 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -62,6 +62,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P04 | 2min | 2 tasks | 2 files |
 | Phase 02 P01 | 15min | 2 tasks | 11 files |
 | Phase 02 P02 | 10min | 2 tasks | 0 files |
+| Phase 03 P01 | 4min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Recent decisions affecting current work:
 - [Phase ?]: benchmark_embedding.py: fixed its two imports + docstring in this pass rather than deferring (tracked file, zero-dangling-reference spirit)
 - [Phase ?]: infodynamics/text/__init__.py stays docstring-only, no re-exports yet (D-03) — export curation deferred to Phase 4
 - [Phase ?]: Confirmed test_window_size failure (71/1) is pre-existing QA-03, not a Phase 2 regression -- deferred to Phase 3 per existing decision log
+- [Phase 03]: [Phase 03-01] Locked WindowedRollingDistance's stacked-array column order as novelty/transience/resonance (N_hat/T_hat/R_hat), per D-03's discretion note
+- [Phase 03]: [Phase 03-01] Converged WindowedRollingDistance._validate_data to a single np.asarray(X) idiom, matching every other estimator's validation pattern in the codebase
 
 ### Pending Todos
 
@@ -100,6 +103,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-14T11:17:08.694Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-decouple-the-pipeline/03-CONTEXT.md
+Last session: 2026-07-14T12:04:26.520Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None

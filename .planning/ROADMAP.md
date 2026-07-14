@@ -87,11 +87,11 @@ Plans:
   4. `sklearn.pipeline.Pipeline([("segment", TextSegmenter()), ("encode", Encoder()), ("analyze", MultiscaleInfoDynamics())]).fit_transform(text)` runs end-to-end, asserted in `tests/test_pipeline_composition.py`
   5. Known bugs are fixed as their own labeled commits (`averaging_weigts`→`averaging_weights` rename; `_MODEL_CACHE` keyed by `device` with no in-place mutation; `_validate_data` completed), and test debt is resolved (`test_transience_calculation`, `test_negative_values_in_input_data`, `test_very_small_numbers` implemented; `test_window_size` assertion corrected) — each bug-fix commit updates the golden-output snapshot deliberately, separate from any pure-move commit
 
-**Plans**: 7 plans (research flag resolved during planning as D-01/D-02/D-03/D-04 in 03-CONTEXT.md)
+**Plans**: 1/7 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — Core single-scale estimators: fix WindowedRollingDistance QA-02 bugs (rename, measure resolution → fit, `_validate_data`), give it + Scalogram + FooteNovelty real `transform()`/array output (D-02/D-03)
+- [x] 03-01-PLAN.md — Core single-scale estimators: fix WindowedRollingDistance QA-02 bugs (rename, measure resolution → fit, `_validate_data`), give it + Scalogram + FooteNovelty real `transform()`/array output (D-02/D-03)
 - [ ] 03-02-PLAN.md — Text estimators: new `TextSegmenter` (D-01), make `Encoder`/`MorphologicalEncoder` Pipeline-legal, fix `_MODEL_CACHE` device bug (QA-02)
 
 **Wave 2** *(blocked on Wave 1)*
@@ -148,6 +148,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Baseline & Removal | 4/4 | Complete    | 2026-07-14 |
 | 2. Reorganize Into Core + Text On-Ramp | 2/2 | Complete    | 2026-07-14 |
-| 3. Decouple the Pipeline | 0/7 | Not started | - |
+| 3. Decouple the Pipeline | 1/7 | In Progress|  |
 | 4. Curate the Public API | 0/TBD | Not started | - |
 | 5. Verify | 0/TBD | Not started | - |
