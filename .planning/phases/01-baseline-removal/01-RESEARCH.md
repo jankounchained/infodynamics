@@ -350,17 +350,19 @@ Not applicable — this phase makes no technology choice with an "old way / new 
 
 **If this table is empty:** N/A — see entries above; all are documentation-scope or fixture-sizing judgment calls, not technical facts about the codebase (those were all verified directly).
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should the golden-baseline capture script live under `tests/golden/` (proposed above) or somewhere else (e.g. `scripts/`, `.planning/baseline/`)?**
    - What we know: No existing precedent in this repo for a "golden snapshot" directory; `tests/` is the only place with an established, flat, no-fixture-files convention (per TESTING.md).
    - What's unclear: Whether the planner/user prefers keeping large `.npz` binary blobs inside `tests/` (mixed with pure-Python test code) or in a separate top-level directory.
    - Recommendation: Default to `tests/golden/` (keeps it discoverable alongside the pytest suite that consumes it) unless the plan-checker or user objects.
+   - **RESOLVED — `tests/golden/`.** Plans 01-01/01-03 place the artifacts at `tests/golden/capture_baseline.py`, `tests/golden/baseline_arrays.npz`, `tests/golden/baseline_meta.json`, with the reusable comparison test at `tests/test_golden_baseline.py`.
 
 2. **How many separate commits should removal be split into?**
    - What we know: The one hard constraint is baseline-commit-before-any-removal-commit (Pattern 1). Nothing in ROADMAP.md/REQUIREMENTS.md mandates a specific removal commit granularity.
    - What's unclear: Whether finer-grained removal commits (e.g., one per success criterion) meaningfully improve bisectability over one combined removal commit, given removal is a pure subtraction with no surviving-code edits.
    - Recommendation: Leave to the planner's judgment at plan-write time; either is compliant with CLAUDE.md's preservation constraint since git history already satisfies it once the baseline commit exists.
+   - **RESOLVED — baseline commit first (Plan 01-01), then removal split across two task/commit boundaries in Plan 01-02** (Task 1: `git rm` of dashboard/ + cache_contract.py + shipping.py + test_manifest.py; Task 2: setup.py entry_points edit + reinstall), with Plan 01-03 as a modifies-nothing verification gate. Satisfies Pattern 1 (baseline-before-removal) while keeping the two mechanically distinct removal steps — file deletion vs. installed-state refresh — bisectable.
 
 ## Environment Availability
 
