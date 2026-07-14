@@ -1,4 +1,37 @@
-""" """
+"""Golden-baseline regression tests: compare the current pipeline's outputs
+against the checked-in pre-refactor snapshot (tests/golden/baseline_arrays.npz
+/ baseline_meta.json) to enforce QA-01 ("no numerical drift").
+
+QA-01 is enforced as TWO complementary guarantees, because the pipeline mixes
+float64 and float32 numerics:
+
+  (a) Same-platform bit-determinism. capture_baseline.py's `__main__` self-check
+      asserts two independent same-machine compute_outputs() calls agree, and the
+      encoder-independent, seeded-rng numeric/cluster arrays here (WindowedRolling
+      Distance, Scalogram, FooteNovelty, DTW barycenters — all float64) are held
+      at the tight `_NUMERIC_ATOL = 1e-8` band, with cluster labels required to
+      match exactly (`np.array_equal`).
+
+  (b) Bounded cross-platform equivalence for float32 transformer-derived signals
+      (embeddings, self-similarity matrices, scalograms, resonance/novelty/
+      transience signals, and SSM-derived descriptors), held at the looser
+      `_TRANSFORMER_ATOL = 1e-6` band.
+
+Byte-exact cross-platform reproducibility of (b) is NOT achievable: sentence-
+transformers returns float32 embeddings, and macOS (Accelerate/vecLib BLAS,
+used to capture the golden baseline) vs Linux CI (OpenBLAS/manylinux BLAS)
+reorder non-associative float32 summations inside matrix-multiply kernels,
+producing mathematically-equivalent but not bit-identical results that differ
+by up to ~1 ULP (observed range: 6e-8 to 1.6e-7). A float64-grade `atol=1e-8`
+can never absorb that noise, which is exactly why CI failed on ubuntu-latest
+while passing locally on macOS before this fix.
+
+Do NOT re-tighten `_TRANSFORMER_ATOL` back to a float64 grade — it is guarded
+by `test_golden_baseline_tolerance_policy()`, which pins
+`_TRANSFORMER_ATOL > _NUMERIC_ATOL` and `_TRANSFORMER_ATOL >= 1.6e-7`.
+
+Full investigation: .planning/debug/golden-baseline-ci-drift.md
+"""
 import json
 import os
 import sys
