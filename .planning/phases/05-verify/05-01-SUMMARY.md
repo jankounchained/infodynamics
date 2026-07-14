@@ -115,3 +115,12 @@ None - no external service configuration required.
 ---
 *Phase: 05-verify*
 *Completed: 2026-07-14*
+
+## Self-Check: PASSED
+
+- FOUND: infodynamics/text/morphology.py
+- FOUND: tests/text/test_morphology.py
+- FOUND: .planning/phases/05-verify/05-01-SUMMARY.md
+- FOUND: d849970 (Task 1 commit)
+- FOUND: 8b93968 (Task 2 commit)
+- FOUND: 8a8d6e3 (SUMMARY commit)
