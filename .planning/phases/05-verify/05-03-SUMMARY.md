@@ -91,3 +91,9 @@ Phase 5 gating status is unaffected by this plan (requirements: [] by design —
 ---
 *Phase: 05-verify*
 *Completed: 2026-07-14*
+
+## Self-Check: PASSED
+
+- FOUND: .github/workflows/ci.yml
+- FOUND: 16f2baf (Task 1 commit)
+- FOUND: 37b4231 (summary doc commit)
