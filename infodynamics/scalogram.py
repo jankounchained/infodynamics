@@ -117,6 +117,12 @@ class Scalogram(BaseEstimator, TransformerMixin):
         self.scales_ = scales
         return self
 
+    def transform(self, embeddings: ArrayLike, y=None) -> np.ndarray:
+        """Recompute the scalogram matrix fresh from embeddings (no fit-time
+        state is reused) and return the [n_scales x n_chunks] matrix."""
+        self.fit(embeddings)
+        return self.matrix_
+
     def fit_transform(self, embeddings: ArrayLike, y=None) -> np.ndarray:
         """Fit to embeddings, return the [n_scales x n_chunks] scalogram matrix."""
         self.fit(embeddings)
@@ -226,6 +232,12 @@ class FooteNovelty(BaseEstimator, TransformerMixin):
         self.novelty_ = np.vstack([foote_novelty(S, r) for r in radii])
         self.radii_ = radii
         return self
+
+    def transform(self, embeddings: ArrayLike, y=None) -> np.ndarray:
+        """Recompute Foote novelty fresh from embeddings (no fit-time state
+        is reused) and return the [n_radii x n_chunks] novelty matrix."""
+        self.fit(embeddings)
+        return self.novelty_
 
     def fit_transform(self, embeddings: ArrayLike, y=None) -> np.ndarray:
         """Fit to embeddings, return the [n_radii x n_chunks] novelty matrix."""
