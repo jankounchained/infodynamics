@@ -3,11 +3,10 @@ gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: Core Extraction
 current_phase: 5
-status: Awaiting next milestone
+status: "Milestone v0.5 shipped — PR #9"
 stopped_at: Milestone v0.5 archived
-last_updated: "2026-07-14T17:45:46.089Z"
+last_updated: "2026-07-14T18:03:16.609Z"
 last_activity: 2026-07-14
-last_activity_desc: Milestone v0.5 completed and archived
 progress:
   total_phases: 5
   completed_phases: 5
@@ -30,8 +29,8 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 
 Phase: Milestone v0.5 complete
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-07-14 — Milestone v0.5 completed and archived
+Status: Milestone v0.5 shipped — PR #9
+Last activity: 2026-07-14
 
 ## Performance Metrics
 
