@@ -24,13 +24,13 @@ pytest.importorskip("scipy")
 
 from infodynamics import (
     FooteNovelty,
-    InfoDynamics,
     MultiscaleInfoDynamics,
     Scalogram,
     SignalClusterer,
     WindowedRollingDistance,
     structure_descriptors,
 )
+from infodynamics.text import TextInfoDynamics, TextMultiscaleInfoDynamics
 from infodynamics.text.embedding import Encoder
 
 # --- Text fixtures -----------------------------------------------------
@@ -158,19 +158,18 @@ def compute_outputs():
     encoder = Encoder("sentence-transformers/all-MiniLM-L6-v2", device="cpu")
 
     for name, text in FIXTURES.items():
-        info = InfoDynamics(encoder=encoder, window_size=3).fit_transform(text)
-        arrays[f"{name}_novelty"] = np.asarray(info["novelty"])
-        arrays[f"{name}_transience"] = np.asarray(info["transience"])
-        arrays[f"{name}_resonance"] = np.asarray(info["resonance"])
+        tid = TextInfoDynamics(encoder=encoder, window_size=3).fit(text)
+        arrays[f"{name}_novelty"] = np.asarray(tid.signal_["novelty"])
+        arrays[f"{name}_transience"] = np.asarray(tid.signal_["transience"])
+        arrays[f"{name}_resonance"] = np.asarray(tid.signal_["resonance"])
 
-        multiscale = MultiscaleInfoDynamics(encoder=encoder)
-        result = multiscale.fit_transform(text)
-        arrays[f"multiscale_{name}_ssm"] = np.asarray(result["ssm"])
-        arrays[f"multiscale_{name}_scalogram"] = np.asarray(result["scalogram"])
-        arrays[f"multiscale_{name}_novelty"] = np.asarray(result["novelty"])
+        multiscale = TextMultiscaleInfoDynamics(encoder=encoder).fit(text)
+        arrays[f"multiscale_{name}_ssm"] = np.asarray(multiscale.result_["ssm"])
+        arrays[f"multiscale_{name}_scalogram"] = np.asarray(multiscale.result_["scalogram"])
+        arrays[f"multiscale_{name}_novelty"] = np.asarray(multiscale.result_["novelty"])
 
         meta["fixtures"][name] = {
-            "descriptors": result["descriptors"],
+            "descriptors": multiscale.result_["descriptors"],
             "text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
             "n_chunks": len(multiscale.chunks_),
             "scales": list(multiscale.scales_),
@@ -181,10 +180,10 @@ def compute_outputs():
     rng = np.random.default_rng(NUMERIC_SEED)
     X = rng.standard_normal(NUMERIC_ARRAY_SHAPE)
 
-    wrd_signal = WindowedRollingDistance(measure="cosine", window_size=3).fit_transform(X)
-    arrays["numeric_wrd_N_hat"] = np.asarray(wrd_signal["N_hat"])
-    arrays["numeric_wrd_T_hat"] = np.asarray(wrd_signal["T_hat"])
-    arrays["numeric_wrd_R_hat"] = np.asarray(wrd_signal["R_hat"])
+    wrd = WindowedRollingDistance(measure="cosine", window_size=3).fit(X)
+    arrays["numeric_wrd_N_hat"] = np.asarray(wrd.signal_["N_hat"])
+    arrays["numeric_wrd_T_hat"] = np.asarray(wrd.signal_["T_hat"])
+    arrays["numeric_wrd_R_hat"] = np.asarray(wrd.signal_["R_hat"])
 
     scalogram = Scalogram(scales=_DEFAULT_SCALES)
     arrays["numeric_scalogram_matrix"] = np.asarray(scalogram.fit_transform(X))
