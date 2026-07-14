@@ -55,6 +55,36 @@ def test_transience_calculation():
         assert not np.isnan(i.signal_["T_hat"]).any()
 
 
+def test_negative_values_in_input_data():
+    """distances against arbitrary-magnitude real vectors (incl. negatives)
+    must stay finite, not NaN/Inf."""
+    rng = np.random.default_rng(7)
+    X = rng.standard_normal(size=(25, 6))
+
+    i = WindowedRollingDistance(measure="cosine", window_size=3)
+    i.fit(X)
+
+    for key in ("N_hat", "T_hat", "R_hat"):
+        signal = i.signal_[key]
+        assert signal.shape == (25,)
+        assert np.isfinite(signal).all()
+
+
+def test_very_small_numbers():
+    """numerical stability at the denormal edge: very small magnitudes
+    must not produce NaN/Inf output."""
+    rng = np.random.default_rng(7)
+    X = rng.standard_normal(size=(25, 6)) * 1e-300
+
+    i = WindowedRollingDistance(measure="cosine", window_size=3)
+    i.fit(X)
+
+    for key in ("N_hat", "T_hat", "R_hat"):
+        signal = i.signal_[key]
+        assert signal.shape == (25,)
+        assert np.isfinite(signal).all()
+
+
 def test_validate_input_list_of_lists():
     """ """
     a = [[0.5, 0.5], [0.5, 0.5]]
