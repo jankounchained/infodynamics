@@ -4,6 +4,8 @@ Loads HuggingFace Hub encoder models and embeds text chunks.
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+from sklearn.base import BaseEstimator, TransformerMixin
+from typing_extensions import Self
 
 _MODEL_CACHE: Dict[Tuple[str, Optional[str]], "object"] = {}
 
@@ -26,7 +28,7 @@ def _load_model(model_name: str, device: Optional[str] = None):
     return _MODEL_CACHE[key]
 
 
-class Encoder:
+class Encoder(BaseEstimator, TransformerMixin):
     """Embeds text chunks with a HuggingFace Hub encoder model."""
 
     def __init__(
@@ -40,6 +42,12 @@ class Encoder:
         self.device = device
         self.batch_size = batch_size
         self.normalize = normalize
+
+    def fit(self, texts: List[str], y=None) -> Self:
+        return self
+
+    def transform(self, texts: List[str], y=None) -> np.ndarray:
+        return self.encode(texts)
 
     def encode(self, texts: List[str]) -> np.ndarray:
         model = _load_model(self.model_name, self.device)
