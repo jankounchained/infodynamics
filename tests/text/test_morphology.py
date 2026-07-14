@@ -7,10 +7,9 @@ pytest.importorskip("textdescriptives")
 
 from spacy.tokens import Doc  # noqa: E402
 
-import infodynamics.pipeline as pipeline_module  # noqa: E402
 from infodynamics import MorphologicalEncoder  # noqa: E402
 from infodynamics.text.morphology import encode_all_feature_groups  # noqa: E402
-from infodynamics.pipeline import MultiscaleInfoDynamics  # noqa: E402
+from infodynamics.text import TextMultiscaleInfoDynamics  # noqa: E402
 
 
 class FakeNlp:
@@ -89,13 +88,13 @@ class FakeMorphologicalEncoder:
 
 def test_multiscale_info_dynamics_accepts_custom_encoder():
     text = "Cats chase mice. Dogs chase cats. The sun is bright today. Rain falls on the roof."
-    model = MultiscaleInfoDynamics(encoder=FakeMorphologicalEncoder(), scales=[1, 2], radii=[1, 2])
+    model = TextMultiscaleInfoDynamics(encoder=FakeMorphologicalEncoder(), scales=[1, 2], radii=[1, 2])
     model.fit(text)
 
     assert model.descriptors_["n_chunks"] == len(model.chunks_)
 
 
 def test_fit_raises_without_model_name_or_encoder():
-    model = pipeline_module.MultiscaleInfoDynamics()
+    model = TextMultiscaleInfoDynamics()
     with pytest.raises(ValueError):
         model.fit("Some text.")
