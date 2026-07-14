@@ -1,4 +1,6 @@
 """ """
+import sys
+
 import numpy as np
 import pytest
 
@@ -35,6 +37,16 @@ def _make_docs():
 def test_invalid_feature_group_raises():
     with pytest.raises(ValueError):
         MorphologicalEncoder(feature_group="not_a_real_group")
+
+
+def test_encode_raises_actionable_import_error_without_textdescriptives(monkeypatch):
+    monkeypatch.setitem(sys.modules, "textdescriptives", None)
+
+    encoder = MorphologicalEncoder(feature_group="pos_proportions")
+    with pytest.raises(ImportError, match="morphology") as excinfo:
+        encoder.encode(["ahoj svete"])
+
+    assert "pip install" in str(excinfo.value)
 
 
 def test_encode_returns_matrix_with_feature_names():
