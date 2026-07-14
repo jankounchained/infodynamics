@@ -157,5 +157,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Baseline & Removal | 4/4 | Complete    | 2026-07-14 |
 | 2. Reorganize Into Core + Text On-Ramp | 2/2 | Complete    | 2026-07-14 |
 | 3. Decouple the Pipeline | 7/7 | Complete    | 2026-07-14 |
-| 4. Curate the Public API | 2/2 | Complete   | 2026-07-14 |
+| 4. Curate the Public API | 2/2 | Complete    | 2026-07-14 |
 | 5. Verify | 0/TBD | Not started | - |
