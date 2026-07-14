@@ -6,14 +6,14 @@ current_phase: 01
 current_phase_name: baseline-removal
 status: executing
 stopped_at: ROADMAP.md and STATE.md created; REQUIREMENTS.md traceability populated; awaiting user approval of roadmap draft
-last_updated: "2026-07-14T09:03:46.150Z"
+last_updated: "2026-07-14T09:13:31.700Z"
 last_activity: 2026-07-14
 last_activity_desc: Phase 01 execution started
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 4
+  completed_plans: 4
   percent: 20
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 01 (baseline-removal) — EXECUTING
-Plan: 3 of 3
+Plan: 2 of 4
 Status: Ready to execute
 Last activity: 2026-07-14 — Phase 01 execution started
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P01 | 15 | 2 tasks | 5 files |
 | Phase 01-baseline-removal P02 | 16min | 2 tasks | 11 files |
 | Phase 01 P03 | 12min | 2 tasks | 0 files |
+| Phase 01 P04 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,7 @@ Recent decisions affecting current work:
 - [Phase 01-01]: Golden-output snapshot pattern established: tests/golden/ one-time capture script + checked-in .npz/.json + permanent pytest comparison test, reused at close of every subsequent phase
 - [Phase 01-02]: Recalculated expected post-removal pytest collection count as 72 (not the plan's hardcoded 68), accounting for 4 golden-baseline tests Plan 01 added before this plan ran
 - [Phase 01-03]: Investigated test_window_size failure surfaced during full-suite re-run; confirmed pre-existing (predates Phase 01 per .hypothesis/ cache mtime and git history) and already tracked as QA-03 for Phase 3 fix — left unfixed per scope boundary.
+- [Phase ?]: [Phase 01-04] Implemented both halves of CR-01 fix (importorskip guards AND self-sufficient test extra) per reviewer recommendation, rather than choosing one
 
 ### Pending Todos
 
@@ -92,6 +94,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-14T08:17:44.379Z
+Last session: 2026-07-14T09:13:08.818Z
 Stopped at: ROADMAP.md and STATE.md created; REQUIREMENTS.md traceability populated; awaiting user approval of roadmap draft
 Resume file: None
