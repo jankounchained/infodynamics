@@ -9,10 +9,10 @@ Requirements for this milestone: extract a lean, modality-agnostic, sklearn-comp
 
 ### Removal
 
-- [ ] **RM-01**: The `dashboard/` directory is removed from the repository (preserved in git history)
-- [ ] **RM-02**: `cache_contract.py`, `shipping.py`, and `build_dashboard_artifacts.py` are removed from the package
-- [ ] **RM-03**: The `infodynamics-pack` / `-pull` / `-verify` / `-init-project` `console_scripts` entries are removed from `setup.py`; no registered console script references deleted code
-- [ ] **RM-04**: Tests that exclusively cover removed code (`tests/test_manifest.py`) are removed; `pytest --collect-only` reports zero collection errors
+- [x] **RM-01**: The `dashboard/` directory is removed from the repository (preserved in git history)
+- [x] **RM-02**: `cache_contract.py`, `shipping.py`, and `build_dashboard_artifacts.py` are removed from the package
+- [x] **RM-03**: The `infodynamics-pack` / `-pull` / `-verify` / `-init-project` `console_scripts` entries are removed from `setup.py`; no registered console script references deleted code
+- [x] **RM-04**: Tests that exclusively cover removed code (`tests/test_manifest.py`) are removed; `pytest --collect-only` reports zero collection errors
 - [ ] **RM-05**: A repo-wide search for removed symbols (`dashboard`, `shipping`, `cache_contract`, `bench_core`, `build_dashboard_artifacts`) returns no references in surviving package code, `setup.py`, or docs
 
 ### Core (modality-agnostic)
@@ -78,10 +78,10 @@ Each requirement maps to exactly one phase.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | QA-01 | Phase 1 | Complete |
-| RM-01 | Phase 1 | Pending |
-| RM-02 | Phase 1 | Pending |
-| RM-03 | Phase 1 | Pending |
-| RM-04 | Phase 1 | Pending |
+| RM-01 | Phase 1 | Complete |
+| RM-02 | Phase 1 | Complete |
+| RM-03 | Phase 1 | Complete |
+| RM-04 | Phase 1 | Complete |
 | RM-05 | Phase 1 | Pending |
 | TEXT-01 | Phase 2 | Pending |
 | TEXT-03 | Phase 2 | Pending |
