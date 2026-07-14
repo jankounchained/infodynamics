@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 05
-status: verifying
+current_phase: 5
+status: Awaiting next milestone
 stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-07-14T17:39:14.164Z"
+last_updated: "2026-07-14T17:45:46.089Z"
 last_activity: 2026-07-14
-last_activity_desc: Phase 05 complete
+last_activity_desc: Milestone v0.5 completed and archived
 progress:
   total_phases: 5
   completed_phases: 5
@@ -28,12 +28,10 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 
 ## Current Position
 
-Phase: 05
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-07-14 — Phase 05 complete
-
-Progress: [░░░░░░░░░░] 0%
+Phase: Milestone v0.5 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-07-14 — Milestone v0.5 completed and archived
 
 ## Performance Metrics
 
@@ -140,3 +138,7 @@ Items acknowledged and carried forward from previous milestone close:
 Last session: 2026-07-14T17:23:54.953Z
 Stopped at: Completed 05-02-PLAN.md
 Resume file: None
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

@@ -2,7 +2,7 @@
 
 ## What This Is
 
-`infodynamics` is a Python library for **novelty detection from complex time series**. It provides sklearn-compatible estimators that compute information dynamics (novelty, transience, resonance), multi-scale structure (scalogram, self-similarity, Foote novelty), and clustering — plus a first-class **text on-ramp** that turns documents into meaningful time series. This milestone extracts it from a bloated monorepo into a lean, modality-agnostic core package; the dashboard becomes a separate downstream project.
+`infodynamics` is a Python library for **novelty detection from complex time series**. It provides sklearn-compatible estimators that compute information dynamics (novelty, transience, resonance), multi-scale structure (scalogram, self-similarity, Foote novelty), and clustering — plus a first-class **text on-ramp** that turns documents into meaningful time series. As of v0.5, it has been extracted from a bloated monorepo into a lean, modality-agnostic core package: the analysis core takes plain numeric arrays, `infodynamics.text` is a separable on-ramp, every public estimator is sklearn `Pipeline`-composable, and the dashboard/cache/shipping infrastructure that used to couple it to a specific case study is gone. The dashboard itself has not yet been stood up as its own repo — that's future work.
 
 ## Core Value
 
@@ -31,9 +31,9 @@ One clean, sklearn-compatible library that computes novelty/structure signals fr
 
 ### Active
 
-<!-- This milestone: extract a clean, modality-agnostic core. -->
+<!-- No committed milestone in progress. Next milestone's requirements are defined by /gsd-new-milestone. -->
 
-*(none — all milestone requirements validated as of Phase 05)*
+*(none — v0.5 fully validated; next milestone's requirements not yet defined)*
 
 ### Out of Scope
 
@@ -46,10 +46,12 @@ One clean, sklearn-compatible library that computes novelty/structure signals fr
 
 ## Context
 
-- **Brownfield.** Mature monorepo; full analysis in `.planning/codebase/`. The bloat driving this milestone is the coupling of a general analysis library with a case-study-specific dashboard + cache/shipping backbone.
-- The codebase **already leans sklearn-compatible** (`BaseEstimator` / `TransformerMixin`, stateless transformers) — this milestone elevates that from convention to a first-class API constraint.
-- Repo root holds case-study clutter (demo scripts, CSVs, `czech-pdt-ud-2.5-191206.udpipe`, `morphology_demo_output/`, etc.) — candidates for removal/relocation, not part of the shipped package.
-- **Two-project split:** this repo → `infodynamics-core`; the dashboard → its own repo (future work). This milestone plans only the core side.
+- **Brownfield, post-v0.5 extraction.** Mature monorepo prior to this milestone; full pre-refactor analysis in `.planning/codebase/`. The bloat that drove v0.5 was the coupling of a general analysis library with a case-study-specific dashboard + cache/shipping backbone — that coupling is now gone.
+- The codebase is **sklearn-compatible by design, not just convention** — every public estimator (`BaseEstimator` / `TransformerMixin`) passes a `get_params`/`set_params`/`clone()` round-trip and composes in a real `sklearn.pipeline.Pipeline`, locked by `tests/test_pipeline_composition.py` and `tests/test_public_api.py`.
+- Current size: ~6,700 LOC Python across `infodynamics/`. Full pytest suite: 92 tests green.
+- **Known, accepted tech debt (from Phase 05 code review, non-blocking):** `.github/workflows/ci.yml` installs `.[test]`, which doesn't include the `morphology` extra, so `tests/text/test_morphology.py` silently skips on a real CI runner instead of running. Doesn't block anything today (CI is an explicit non-gating bonus deliverable), but worth fixing before relying on CI as a real regression gate — see the `05-REVIEW.md` finding WR-01 (phase 05 artifacts, archived with this milestone).
+- Repo root still holds case-study clutter (demo scripts, CSVs, `czech-pdt-ud-2.5-191206.udpipe`, `morphology_demo_output/`, etc.) — untracked, harmless, explicitly deferred (user decision, not in scope for v0.5).
+- **Two-project split still pending:** this repo is code-ready to become `infodynamics-core`, but the dashboard has not yet been spun out to its own repo — that's future work, not started.
 
 ## Constraints
 
@@ -65,11 +67,11 @@ One clean, sklearn-compatible library that computes novelty/structure signals fr
 |----------|-----------|---------|
 | This repo becomes `infodynamics-core`; dashboard spins out to its own repo | De-bloat the monorepo into two reusable products | — Pending |
 | Two separate repos (not a monorepo/workspace) | Cleanest boundary between library and EDA tool | — Pending |
-| cache/shipping/artifact-serving code leaves with the dashboard | It's case-study infra, not general novelty detection | — Pending |
+| cache/shipping/artifact-serving code leaves with the dashboard | It's case-study infra, not general novelty detection | ◐ Removed from this repo, preserved in git history — Phase 01; physical move to a dashboard repo still Pending |
 | Modality-agnostic core + `infodynamics.text` on-ramp | Headline product is novelty from complex time series; text is first-class but separable | ✓ Done — Phase 02 |
 | Full namespace reorg, breaking imports accepted | Pre-1.0 — a clean, intentional public API is worth the churn | ✓ Done — Phase 04 |
 | Finish line = decoupled + reorganized, tests green (no PyPI/packaging) | Packaging & publishing is a separate later milestone | ✓ Done — Phase 05 |
-| sklearn Pipeline-composable, not full `check_estimator` | Practical composability is the goal; edge-case conformance isn't worth it now | — Pending |
+| sklearn Pipeline-composable, not full `check_estimator` | Practical composability is the goal; edge-case conformance isn't worth it now | ✓ Done — Phase 03 |
 
 ## Evolution
 
@@ -89,4 +91,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-14 after Phase 05 (Verify) completion — milestone v1.0 complete*
+*Last updated: 2026-07-14 after v0.5 (Core Extraction) milestone completion*
