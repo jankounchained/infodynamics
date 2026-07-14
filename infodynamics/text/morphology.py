@@ -191,7 +191,13 @@ class MorphologicalEncoder(BaseEstimator, TransformerMixin):
         return self.encode(texts)
 
     def encode(self, texts: List[str]) -> np.ndarray:
-        from textdescriptives import extract_df
+        try:
+            from textdescriptives import extract_df
+        except ImportError as e:
+            raise ImportError(
+                "The 'morphology' extra is required to use MorphologicalEncoder. "
+                "Install it with `pip install infodynamics[morphology]`."
+            ) from e
 
         nlp = self.nlp if self.nlp is not None else _load_pipeline(self.lang, self.feature_group, self.model_path)
         docs = list(nlp.pipe(texts))
