@@ -1,0 +1,213 @@
+{
+  "cluster": {
+    "label_keys": [
+      0,
+      1
+    ],
+    "n_clusters": 2
+  },
+  "fixtures": {
+    "a": {
+      "descriptors": {
+        "dist_mean_w5": 0.42252050588528317,
+        "dist_var_w5": 0.008178070467950303,
+        "mean_offdiag_sim": 0.19395014643669128,
+        "n_chunks": 48,
+        "p90_offdiag_sim": 0.3391140103340149
+      },
+      "n_chunks": 48,
+      "radii": [
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "scales": [
+        2,
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "text_sha256": "4ebcb8209bb28459b8aaf9dc9eed1f444087143dc3ecd70044942b2e05419e88"
+    },
+    "b": {
+      "descriptors": {
+        "dist_mean_w5": 0.5535029557844003,
+        "dist_var_w5": 0.019295632748345705,
+        "mean_offdiag_sim": 0.0895436629652977,
+        "n_chunks": 48,
+        "p90_offdiag_sim": 0.22185233235359192
+      },
+      "n_chunks": 48,
+      "radii": [
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "scales": [
+        2,
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "text_sha256": "cb7917abc5c654c72464fc8e0d71cf7493231e05b77064c43d52560dcb64c951"
+    },
+    "c": {
+      "descriptors": {
+        "dist_mean_w5": 0.5032581587632498,
+        "dist_var_w5": 0.016607578230478547,
+        "mean_offdiag_sim": 0.12184814363718033,
+        "n_chunks": 48,
+        "p90_offdiag_sim": 0.2752709984779358
+      },
+      "n_chunks": 48,
+      "radii": [
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "scales": [
+        2,
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "text_sha256": "38a07715c91e9db050dcbdfca1a56fadfac661f0a3b9801523aee78662414892"
+    }
+  },
+  "numeric": {
+    "descriptors": {
+      "dist_mean_w5": 1.0834959758582126,
+      "dist_var_w5": 0.0723610170688901,
+      "mean_offdiag_sim": -0.008292597791983002,
+      "n_chunks": 60,
+      "p90_offdiag_sim": 0.31096666090253733
+    },
+    "foote_radii": [
+      3,
+      5,
+      8,
+      13,
+      21
+    ],
+    "scalogram_scales": [
+      2,
+      3,
+      5,
+      8,
+      13,
+      21
+    ],
+    "seed": 20260713,
+    "shape": [
+      60,
+      16
+    ]
+  },
+  "shapes": {
+    "a_novelty": [
+      48
+    ],
+    "a_resonance": [
+      48
+    ],
+    "a_transience": [
+      48
+    ],
+    "b_novelty": [
+      48
+    ],
+    "b_resonance": [
+      48
+    ],
+    "b_transience": [
+      48
+    ],
+    "c_novelty": [
+      48
+    ],
+    "c_resonance": [
+      48
+    ],
+    "c_transience": [
+      48
+    ],
+    "cluster_barycenter_0": [
+      40
+    ],
+    "cluster_barycenter_1": [
+      40
+    ],
+    "cluster_labels": [
+      5
+    ],
+    "multiscale_a_novelty": [
+      5,
+      48
+    ],
+    "multiscale_a_scalogram": [
+      6,
+      48
+    ],
+    "multiscale_a_ssm": [
+      48,
+      48
+    ],
+    "multiscale_b_novelty": [
+      5,
+      48
+    ],
+    "multiscale_b_scalogram": [
+      6,
+      48
+    ],
+    "multiscale_b_ssm": [
+      48,
+      48
+    ],
+    "multiscale_c_novelty": [
+      5,
+      48
+    ],
+    "multiscale_c_scalogram": [
+      6,
+      48
+    ],
+    "multiscale_c_ssm": [
+      48,
+      48
+    ],
+    "numeric_foote_novelty": [
+      5,
+      60
+    ],
+    "numeric_foote_ssm": [
+      60,
+      60
+    ],
+    "numeric_scalogram_matrix": [
+      6,
+      60
+    ],
+    "numeric_wrd_N_hat": [
+      60
+    ],
+    "numeric_wrd_R_hat": [
+      60
+    ],
+    "numeric_wrd_T_hat": [
+      60
+    ]
+  }
+}
