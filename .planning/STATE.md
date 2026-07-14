@@ -6,14 +6,14 @@ current_phase: 03
 current_phase_name: decouple-the-pipeline
 status: executing
 stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-07-14T12:20:37.285Z"
+last_updated: "2026-07-14T12:28:44.809Z"
 last_activity: 2026-07-14
 last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 13
-  completed_plans: 9
+  completed_plans: 10
   percent: 40
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 03 (decouple-the-pipeline) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 Status: Ready to execute
 Last activity: 2026-07-14 — Phase 03 execution started
 
@@ -65,6 +65,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03 P01 | 4min | 3 tasks | 2 files |
 | Phase 03 P02 | 3min | 3 tasks tasks | 3 files files |
 | Phase 03 P03 | 6min | 2 tasks | 1 files |
+| Phase 03 P04 | 6min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,7 @@ Recent decisions affecting current work:
 - [Phase 03]: [Phase 03-02] _load_model now constructs SentenceTransformer(model_name, device=device) at load time instead of mutating a cached model's device after the fact, matching morphology.py's already-correct tuple-keyed _PIPELINE_CACHE pattern
 - [Phase 03]: [Phase 03-03] MultiscaleInfoDynamics.transform()/fit_transform() return self.scalogram_ as the primary array; MultiscaleInfoDynamics may be legitimately Pipeline-terminal (D-03 discretion)
 - [Phase 03]: [Phase 03-03] Split single-file pipeline.py rewrite into two atomic task commits by staging an intermediate state (InfoDynamics decoupled, MultiscaleInfoDynamics + text imports temporarily unchanged)
+- [Phase 03-04]: Fixed WindowedRollingDistance window_size=0 crash/NaN bug (Rule 1) surfaced while implementing test_transience_calculation's required w=0 no-NaN assertion
 
 ### Pending Todos
 
@@ -109,6 +111,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-14T12:19:04.838Z
+Last session: 2026-07-14T12:27:51.913Z
 Stopped at: Completed 03-02-PLAN.md
 Resume file: None
