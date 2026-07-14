@@ -34,11 +34,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. `pytest --collect-only -q` reports zero collection errors after `tests/test_manifest.py` is removed
   5. A repo-wide grep for `dashboard`, `shipping`, `cache_contract`, `bench_core`, `build_dashboard_artifacts` returns no hits in surviving package code, `setup.py`, or docs
 
-**Plans**: 3 plans
+**Plans**: 1/3 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 01-01-PLAN.md — Capture golden-output baseline (all six estimators) and wire it into a permanent pytest comparison test
+- [x] 01-01-PLAN.md — Capture golden-output baseline (all six estimators) and wire it into a permanent pytest comparison test
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -114,7 +114,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Baseline & Removal | 0/3 | Planned | - |
+| 1. Baseline & Removal | 1/3 | In Progress|  |
 | 2. Reorganize Into Core + Text On-Ramp | 0/TBD | Not started | - |
 | 3. Decouple the Pipeline | 0/TBD | Not started | - |
 | 4. Curate the Public API | 0/TBD | Not started | - |

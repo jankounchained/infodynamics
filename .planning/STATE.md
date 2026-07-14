@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 1
-current_phase_name: Baseline & Removal
+current_phase: 01
+current_phase_name: baseline-removal
 status: executing
 stopped_at: ROADMAP.md and STATE.md created; REQUIREMENTS.md traceability populated; awaiting user approval of roadmap draft
-last_updated: "2026-07-14T07:14:48.409Z"
-last_activity: 2026-07-13
-last_activity_desc: ROADMAP.md and REQUIREMENTS.md traceability created; 19/19 v1 requirements mapped across 5 phases
+last_updated: "2026-07-14T08:00:52.081Z"
+last_activity: 2026-07-14
+last_activity_desc: Phase 01 execution started
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
   percent: 0
 ---
 
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-13)
 
 **Core value:** One clean, sklearn-compatible library that computes novelty/structure signals from any numeric time series — with text as a first-class but separable on-ramp — free of dashboard and case-study baggage.
-**Current focus:** Phase 1 — Baseline & Removal
+**Current focus:** Phase 01 — baseline-removal
 
 ## Current Position
 
-Phase: 1 of 5 (Baseline & Removal)
-Plan: TBD — not yet planned
+Phase: 01 (baseline-removal) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-07-13 — ROADMAP.md and REQUIREMENTS.md traceability created; 19/19 v1 requirements mapped across 5 phases
+Last activity: 2026-07-14 — Phase 01 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 01 P01 | 15 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,7 @@ Recent decisions affecting current work:
 - Roadmap: subtractive-before-additive, move-before-refactor phase ordering (Remove → Reorganize → Decouple → Curate → Verify) chosen so numerical drift stays bisectable
 - Roadmap: golden-output baseline captured as prerequisite work inside Phase 1, re-verified at close of every subsequent phase
 - Roadmap: all flagged bugs (QA-02) and test debt (QA-03) fixed this milestone, attached to Phase 3 as their own labeled commits — not deferred
+- [Phase 01-01]: Golden-output snapshot pattern established: tests/golden/ one-time capture script + checked-in .npz/.json + permanent pytest comparison test, reused at close of every subsequent phase
 
 ### Pending Todos
 
@@ -85,6 +87,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-13
+Last session: 2026-07-14T07:57:19.320Z
 Stopped at: ROADMAP.md and STATE.md created; REQUIREMENTS.md traceability populated; awaiting user approval of roadmap draft
 Resume file: None
