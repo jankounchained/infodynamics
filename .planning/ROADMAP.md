@@ -118,7 +118,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Baseline & Removal | 4/4 | Complete   | 2026-07-14 |
+| 1. Baseline & Removal | 4/4 | Complete    | 2026-07-14 |
 | 2. Reorganize Into Core + Text On-Ramp | 0/TBD | Not started | - |
 | 3. Decouple the Pipeline | 0/TBD | Not started | - |
 | 4. Curate the Public API | 0/TBD | Not started | - |
