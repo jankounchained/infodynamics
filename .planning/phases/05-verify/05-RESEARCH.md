@@ -414,7 +414,9 @@ assert not (heavy & set(sys.modules))
 
 **If this table is empty:** N/A — two assumptions logged above, both low-risk and both about third-party CI infrastructure version currency, not about this project's own code or requirements.
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+Both questions below are resolved as non-blocking/discretionary within their own recommendations — neither gates phase completion.
 
 1. **Should `SignalClusterer`'s `ImportError` message be tightened to name the class, not just the extra?**
    - What we know: The message already names the extra (`'clustering'`) and gives the exact install command — this satisfies criterion 2's literal wording ("actionable ImportError naming the missing extra"). `Encoder`'s and (once Pitfall 1 is fixed) `MorphologicalEncoder`'s messages additionally name the class.
