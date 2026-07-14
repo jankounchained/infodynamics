@@ -7,9 +7,9 @@ from typing_extensions import Self
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from infodynamics.embedding import Encoder
+from infodynamics.text.embedding import Encoder
 from infodynamics.scalogram import FooteNovelty, Scalogram, structure_descriptors
-from infodynamics.segmentation import Level, segment
+from infodynamics.text.segmentation import Level, segment
 from infodynamics.time_series import WindowedRollingDistance
 
 
@@ -43,7 +43,7 @@ class InfoDynamics(BaseEstimator, TransformerMixin):
 
         encoder : object or None, default=None
             a pre-built encoder exposing `.encode(texts: List[str]) -> np.ndarray`, e.g.
-            infodynamics.embedding.Encoder or infodynamics.morphology.MorphologicalEncoder.
+            infodynamics.text.embedding.Encoder or infodynamics.text.morphology.MorphologicalEncoder.
             Takes precedence over `model_name` if given.
 
         segment_level : {'word', 'sentence', 'paragraph'}, default='sentence'
@@ -185,7 +185,7 @@ class MultiscaleInfoDynamics(BaseEstimator, TransformerMixin):
 
         encoder : object or None, default=None
             a pre-built encoder exposing `.encode(texts: List[str]) -> np.ndarray`, e.g.
-            infodynamics.embedding.Encoder or infodynamics.morphology.MorphologicalEncoder.
+            infodynamics.text.embedding.Encoder or infodynamics.text.morphology.MorphologicalEncoder.
             Takes precedence over `model_name` if given.
 
         segment_level : {'word', 'sentence', 'paragraph'}, default='sentence'
