@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 03
 current_phase_name: decouple-the-pipeline
-status: executing
+status: verifying
 stopped_at: Completed 03-06-PLAN.md
-last_updated: "2026-07-14T12:43:28.474Z"
+last_updated: "2026-07-14T12:52:06.008Z"
 last_activity: 2026-07-14
 last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 13
-  completed_plans: 12
-  percent: 40
+  completed_plans: 13
+  percent: 60
 ---
 
 # Project State
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 
 Phase: 03 (decouple-the-pipeline) — EXECUTING
 Plan: 7 of 7
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-14 — Phase 03 execution started
 
 Progress: [░░░░░░░░░░] 0%
@@ -68,6 +68,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03 P04 | 6min | 2 tasks | 2 files |
 | Phase 03 P05 | 8min | 2 tasks | 2 files |
 | Phase 03 P06 | 6min | 2 tasks tasks | 3 files files |
+| Phase 03 P07 | 6min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,8 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 03-05] Task 1's verify block references importing TextInfoDynamics from infodynamics.text, valid only after Task 2's __init__.py re-export lands - verified functionally via direct submodule import first, then re-ran the plan's literal verify command after Task 2 completed
 - [Phase ?]: [Phase 03-06] No numeric-behavior changes were needed to migrate tests to the Text* wrappers -- purely call-site/API-shape migration, empirically confirming CORE-02/QA-02's decoupling and bug fixes stayed non-numerical
 - [Phase ?]: [Phase 03-06] Golden baseline re-verified: tests/test_golden_baseline.py passes 4/4 against the EXISTING, unmodified baseline_arrays.npz/baseline_meta.json -- zero numerical drift proven across Phase 3's Plans 01/02/03/05
+- [Phase ?]: [Phase 03-07] Split the single new test file into two atomic commits (clone round-trip, then Pipeline composition) matching the plan's Task 1/Task 2 boundary
+- [Phase ?]: [Phase 03-07] test_pipeline_with_real_encoder uses a 50-sentence synthetic text (not the shared 10-sentence fixture) because MultiscaleInfoDynamics()'s literal criterion-4 defaults require n_chunks >= 43 for every scale/radius to fit
 
 ### Pending Todos
 
@@ -117,6 +120,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-14T12:43:28.467Z
+Last session: 2026-07-14T12:50:17.826Z
 Stopped at: Completed 03-06-PLAN.md
 Resume file: None
