@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Baseline & Removal** - Capture the golden-output snapshot, then strip the dashboard, cache/shipping infra, and their entry points/tests (completed 2026-07-14)
 - [x] **Phase 2: Reorganize Into Core + Text On-Ramp** - Pure `git mv` of segmentation/embedding/morphology under `infodynamics.text`; zero behavior change (completed 2026-07-14)
 - [x] **Phase 3: Decouple the Pipeline** - Make the analysis pipeline ndarray-only and every public estimator genuinely `Pipeline`-composable; fix known bugs and test debt (completed 2026-07-14)
-- [ ] **Phase 4: Curate the Public API** - Explicit curated exports, canonical usage example, old→new import migration notes
+- [x] **Phase 4: Curate the Public API** - Explicit curated exports, canonical usage example, old→new import migration notes (completed 2026-07-14)
 - [ ] **Phase 5: Verify** - Empirically prove the finish line: grep-clean, minimal-venv smoke test, full suite green, no numerical drift
 
 ## Phase Details
@@ -122,7 +122,7 @@ Plans:
   3. A canonical example demonstrates both core-only usage (`ndarray` in, no text on-ramp) and full `Pipeline` composition (text on-ramp → analysis)
   4. A CHANGELOG/migration note lists the old→new import path for every symbol that moved during this milestone
 
-**Plans**: 1/2 plans executed
+**Plans**: 2/2 plans complete
 Plans:
 **Wave 1**
 
@@ -130,7 +130,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1)*
 
-- [ ] 04-02-PLAN.md — Canonical `examples/basic_usage.py` (core-only `ndarray` path + full `Pipeline` composition) and `CHANGELOG.md` old→new import-path migration note (API-04)
+- [x] 04-02-PLAN.md — Canonical `examples/basic_usage.py` (core-only `ndarray` path + full `Pipeline` composition) and `CHANGELOG.md` old→new import-path migration note (API-04)
 
 ### Phase 5: Verify
 
@@ -157,5 +157,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Baseline & Removal | 4/4 | Complete    | 2026-07-14 |
 | 2. Reorganize Into Core + Text On-Ramp | 2/2 | Complete    | 2026-07-14 |
 | 3. Decouple the Pipeline | 7/7 | Complete    | 2026-07-14 |
-| 4. Curate the Public API | 1/2 | In Progress|  |
+| 4. Curate the Public API | 2/2 | Complete   | 2026-07-14 |
 | 5. Verify | 0/TBD | Not started | - |

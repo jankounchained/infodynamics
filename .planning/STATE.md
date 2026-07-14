@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 04
 current_phase_name: curate-the-public-api
-status: executing
+status: verifying
 stopped_at: Phase 4 context gathered
-last_updated: "2026-07-14T14:40:34.084Z"
+last_updated: "2026-07-14T14:49:00.454Z"
 last_activity: 2026-07-14
 last_activity_desc: Phase 04 execution started
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 15
-  completed_plans: 14
-  percent: 60
+  completed_plans: 15
+  percent: 80
 ---
 
 # Project State
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 
 Phase: 04 (curate-the-public-api) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-14 — Phase 04 execution started
 
 Progress: [░░░░░░░░░░] 0%
@@ -71,6 +71,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03 P06 | 6min | 2 tasks tasks | 3 files files |
 | Phase 03 P07 | 6min | 2 tasks | 1 files |
 | Phase 04 P01 | 6min | 2 tasks tasks | 4 files files |
+| Phase 04 P02 | 5min | 2 tasks tasks | 2 files files |
 
 ## Accumulated Context
 
@@ -104,6 +105,8 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 03-07] test_pipeline_with_real_encoder uses a 50-sentence synthetic text (not the shared 10-sentence fixture) because MultiscaleInfoDynamics()'s literal criterion-4 defaults require n_chunks >= 43 for every scale/radius to fit
 - [Phase 04-01]: infodynamics.__all__ = exactly 8 core symbols per D-01; zero .text imports remain (D-05)
 - [Phase 04-01]: infodynamics.text.__all__ folds in Encoder/MorphologicalEncoder/Chunk/segment/strip_markdown alongside the 3 existing Text* wrappers, per Claude's-discretion note
+- [Phase 04-02]: examples/basic_usage.py demonstrates core_only_demo() (ndarray -> InfoDynamics/MultiscaleInfoDynamics, zero infodynamics.text imports) and pipeline_demo() (sklearn.pipeline.Pipeline([TextSegmenter, Encoder, MultiscaleInfoDynamics]).fit_transform), no examples/__init__.py
+- [Phase 04-02]: CHANGELOG.md written as a flat old->new import migration table (not Keep-a-Changelog prose), kept as a dedicated root file rather than folded into README.md
 
 ### Pending Todos
 
@@ -124,6 +127,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-14T14:39:03.862Z
+Last session: 2026-07-14T14:47:23.111Z
 Stopped at: Phase 4 context gathered
 Resume file: .planning/phases/04-curate-the-public-api/04-CONTEXT.md
