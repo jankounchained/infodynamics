@@ -3,15 +3,13 @@ Detect and describe: estimates novelty, transience and resonance
 (single-scale) and multi-scale structure from a numeric embeddings time
 series.
 """
-from typing import Callable, Optional, Sequence, Union
+from typing import Callable, Sequence, Union
 from typing_extensions import Self
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from infodynamics.text.embedding import Encoder
 from infodynamics.scalogram import FooteNovelty, Scalogram, structure_descriptors
-from infodynamics.text.segmentation import Level, segment
 from infodynamics.time_series import WindowedRollingDistance
 
 
@@ -154,11 +152,10 @@ class InfoDynamics(BaseEstimator, TransformerMixin):
 
 class MultiscaleInfoDynamics(BaseEstimator, TransformerMixin):
     """
-    Segments a text document, embeds its chunks with a HuggingFace Hub
-    encoder model, and estimates its multi-scale semantic structure: a
-    scalogram (rolling distance across window sizes), a self-similarity
-    matrix, Foote novelty (checkerboard-kernel novelty across kernel radii),
-    and interpretable summary descriptors.
+    Estimates the multi-scale semantic structure of a numeric embeddings
+    time series: a scalogram (rolling distance across window sizes), a
+    self-similarity matrix, Foote novelty (checkerboard-kernel novelty
+    across kernel radii), and interpretable summary descriptors.
 
     Complements InfoDynamics, which estimates novelty/transience/resonance
     at a single scale.
@@ -166,35 +163,14 @@ class MultiscaleInfoDynamics(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        model_name: Optional[str] = None,
-        encoder: Optional[object] = None,
-        segment_level: Level = "sentence",
-        chunk_size: int = 1,
         scales: Sequence[int] = (2, 3, 5, 8, 13, 21),
         radii: Sequence[int] = (3, 5, 8, 13, 21),
         measure: Union[str, Callable] = "cosine",
-        device: Optional[str] = None,
-        batch_size: int = 32,
     ):
         """
 
         Parameters
         ----------
-        model_name : str or None, default=None
-            name of a HuggingFace Hub encoder model, e.g. "sentence-transformers/all-MiniLM-L6-v2".
-            Ignored if `encoder` is given. One of `model_name` or `encoder` is required.
-
-        encoder : object or None, default=None
-            a pre-built encoder exposing `.encode(texts: List[str]) -> np.ndarray`, e.g.
-            infodynamics.text.embedding.Encoder or infodynamics.text.morphology.MorphologicalEncoder.
-            Takes precedence over `model_name` if given.
-
-        segment_level : {'word', 'sentence', 'paragraph'}, default='sentence'
-            base unit to split the text document into.
-
-        chunk_size : int, default=1
-            number of consecutive base units to group into a single chunk.
-
         scales : Sequence[int], default=(2, 3, 5, 8, 13, 21)
             window sizes for the scalogram. See infodynamics.scalogram.Scalogram.
 
@@ -203,32 +179,20 @@ class MultiscaleInfoDynamics(BaseEstimator, TransformerMixin):
 
         measure : str or Callable, default='cosine'
             distance measure used by the scalogram. See infodynamics.metrics.DISTANCES.
-
-        device : str or None, default=None
-            device to load the encoder model onto, e.g. "cuda" or "cpu". Defaults to the model's own default.
-
-        batch_size : int, default=32
-            number of chunks to embed per encoder batch.
         """
-        self.model_name = model_name
-        self.encoder = encoder
-        self.segment_level = segment_level
-        self.chunk_size = chunk_size
         self.scales = scales
         self.radii = radii
         self.measure = measure
-        self.device = device
-        self.batch_size = batch_size
 
-    def fit(self, text: str, y=None) -> Self:
-        """Fit multi-scale structure to a text document: segment, embed, and
+    def fit(self, X, y=None) -> Self:
+        """Fit multi-scale structure to a numeric embeddings time series:
         compute the scalogram, self-similarity matrix, Foote novelty and
         summary descriptors.
 
         Parameters
         ----------
-        text : str
-            the text document to analyze.
+        X : np.ndarray of shape (n_chunks, n_features)
+            the embeddings time series to analyze.
 
         y : Ignored
             not used, present here for API consistency by convention.
@@ -238,49 +202,66 @@ class MultiscaleInfoDynamics(BaseEstimator, TransformerMixin):
         self : object
             instance with estimated multi-scale structure.
         """
-        if self.encoder is None and self.model_name is None:
-            raise ValueError("One of 'model_name' or 'encoder' is required.")
+        scalogram = Scalogram(scales=self.scales, measure=self.measure).fit(X)
+        foote = FooteNovelty(radii=self.radii).fit(X)
 
-        chunks = segment(text, level=self.segment_level, chunk_size=self.chunk_size)
-        encoder = self.encoder if self.encoder is not None else Encoder(self.model_name, device=self.device, batch_size=self.batch_size)
-        embeddings = encoder.encode([chunk.text for chunk in chunks])
-
-        scalogram = Scalogram(scales=self.scales, measure=self.measure).fit(embeddings)
-        foote = FooteNovelty(radii=self.radii).fit(embeddings)
-
-        self.chunks_ = chunks
-        self.embeddings_ = embeddings
         self.ssm_ = foote.ssm_
         self.scalogram_ = scalogram.matrix_
         self.scales_ = scalogram.scales_
         self.novelty_ = foote.novelty_
         self.radii_ = foote.radii_
-        self.descriptors_ = structure_descriptors(embeddings, S=self.ssm_)
+        self.descriptors_ = structure_descriptors(X, S=self.ssm_)
+        self.result_ = {
+            "ssm": self.ssm_,
+            "scalogram": self.scalogram_,
+            "novelty": self.novelty_,
+            "descriptors": self.descriptors_,
+        }
 
         return self
 
-    def fit_transform(self, text: str, y=None) -> dict:
+    def transform(self, X, y=None) -> np.ndarray:
         """
-        Fit to a text document, return dict with multi-scale structure.
+        Recompute fresh from X (same code path as fit()) and return the
+        scalogram matrix.
 
         Parameters
         ----------
-        text : str
-            the text document to analyze.
+        X : np.ndarray of shape (n_chunks, n_features)
+            the embeddings time series to analyze.
 
         y : Ignored
             not used, present here for API consistency by convention.
 
         Returns
         -------
-        structure : dict
-            self-similarity matrix ('ssm'), scalogram matrix ('scalogram'),
-            Foote novelty matrix ('novelty'), and summary descriptors ('descriptors').
+        X_new : np.ndarray of shape (n_scales, n_chunks)
+            the scalogram matrix. The full multi-scale structure dict
+            (self-similarity matrix, scalogram, Foote novelty, and
+            descriptors) is available on the fitted attribute self.result_.
         """
-        self.fit(text)
-        return {
-            "ssm": self.ssm_,
-            "scalogram": self.scalogram_,
-            "novelty": self.novelty_,
-            "descriptors": self.descriptors_,
-        }
+        self.fit(X)
+        return self.scalogram_
+
+    def fit_transform(self, X, y=None) -> np.ndarray:
+        """
+        Fit to a numeric embeddings time series, return the scalogram
+        matrix.
+
+        Parameters
+        ----------
+        X : np.ndarray of shape (n_chunks, n_features)
+            the embeddings time series to analyze.
+
+        y : Ignored
+            not used, present here for API consistency by convention.
+
+        Returns
+        -------
+        X_new : np.ndarray of shape (n_scales, n_chunks)
+            the scalogram matrix. The full multi-scale structure dict
+            (self-similarity matrix, scalogram, Foote novelty, and
+            descriptors) is available on the fitted attribute self.result_.
+        """
+        self.fit(X)
+        return self.scalogram_
