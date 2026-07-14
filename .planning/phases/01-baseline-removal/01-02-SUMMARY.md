@@ -152,3 +152,12 @@ None - no external service configuration required.
 ---
 *Phase: 01-baseline-removal*
 *Completed: 2026-07-14*
+
+## Self-Check: PASSED
+
+- FOUND: commit 0a9b195 (Task 1)
+- FOUND: commit 199a904 (Task 2)
+- FOUND: commit 20e70c0 (this SUMMARY)
+- FOUND: SUMMARY.md at .planning/phases/01-baseline-removal/01-02-SUMMARY.md
+- FOUND: dashboard/ removed from working tree
+- FOUND: infodynamics/shipping.py removed from working tree
