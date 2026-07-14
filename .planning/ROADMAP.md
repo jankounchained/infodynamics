@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. `pytest --collect-only -q` reports zero collection errors after `tests/test_manifest.py` is removed
   5. A repo-wide grep for `dashboard`, `shipping`, `cache_contract`, `bench_core`, `build_dashboard_artifacts` returns no hits in surviving package code, `setup.py`, or docs
 
-**Plans**: 3/3 plans complete
+**Plans**: 3/4 plans complete (01-04 = gap closure for CR-01 / Truth #9)
 Plans:
 **Wave 1**
 
@@ -47,6 +47,10 @@ Plans:
 **Wave 3** *(blocked on Wave 2 completion)*
 
 - [x] 01-03-PLAN.md — Verification gate: full suite green at exactly 68 tests, scoped grep sweep clean, console-script shims confirmed gone
+
+**Wave 1 (gap closure)** *(added after verification; independent of Waves 1-3)*
+
+- [ ] 01-04-PLAN.md — Close Truth #9 / CR-01: gate golden-baseline test deps with pytest.importorskip and make setup.py's `test` extra self-sufficient (embedding + clustering)
 
 ### Phase 2: Reorganize Into Core + Text On-Ramp
 
