@@ -87,7 +87,7 @@ Plans:
   4. `sklearn.pipeline.Pipeline([("segment", TextSegmenter()), ("encode", Encoder()), ("analyze", MultiscaleInfoDynamics())]).fit_transform(text)` runs end-to-end, asserted in `tests/test_pipeline_composition.py`
   5. Known bugs are fixed as their own labeled commits (`averaging_weigts`→`averaging_weights` rename; `_MODEL_CACHE` keyed by `device` with no in-place mutation; `_validate_data` completed), and test debt is resolved (`test_transience_calculation`, `test_negative_values_in_input_data`, `test_very_small_numbers` implemented; `test_window_size` assertion corrected) — each bug-fix commit updates the golden-output snapshot deliberately, separate from any pure-move commit
 
-**Plans**: 2/7 plans executed
+**Plans**: 3/7 plans executed
 Plans:
 **Wave 1**
 
@@ -96,7 +96,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1)*
 
-- [ ] 03-03-PLAN.md — Decouple `InfoDynamics`/`MultiscaleInfoDynamics` to ndarray-only (CORE-02), array output + `signal_`/`result_` (D-03); resolves Phase 2's interim text-import exception
+- [x] 03-03-PLAN.md — Decouple `InfoDynamics`/`MultiscaleInfoDynamics` to ndarray-only (CORE-02), array output + `signal_`/`result_` (D-03); resolves Phase 2's interim text-import exception
 - [ ] 03-04-PLAN.md — QA-03 test debt in `test_infodynamics_class.py`: fix `test_window_size` assertion, implement `test_transience_calculation`, add negative/small-number tests
 
 **Wave 3** *(blocked on Waves 1-2)*
@@ -148,6 +148,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Baseline & Removal | 4/4 | Complete    | 2026-07-14 |
 | 2. Reorganize Into Core + Text On-Ramp | 2/2 | Complete    | 2026-07-14 |
-| 3. Decouple the Pipeline | 2/7 | In Progress|  |
+| 3. Decouple the Pipeline | 3/7 | In Progress|  |
 | 4. Curate the Public API | 0/TBD | Not started | - |
 | 5. Verify | 0/TBD | Not started | - |

@@ -6,14 +6,14 @@ current_phase: 03
 current_phase_name: decouple-the-pipeline
 status: executing
 stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-07-14T12:11:51.341Z"
+last_updated: "2026-07-14T12:20:37.285Z"
 last_activity: 2026-07-14
 last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 13
-  completed_plans: 8
+  completed_plans: 9
   percent: 40
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 03 (decouple-the-pipeline) — EXECUTING
-Plan: 3 of 7
+Plan: 4 of 7
 Status: Ready to execute
 Last activity: 2026-07-14 — Phase 03 execution started
 
@@ -64,6 +64,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02 P02 | 10min | 2 tasks | 0 files |
 | Phase 03 P01 | 4min | 3 tasks | 2 files |
 | Phase 03 P02 | 3min | 3 tasks tasks | 3 files files |
+| Phase 03 P03 | 6min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - [Phase 03]: [Phase 03-01] Converged WindowedRollingDistance._validate_data to a single np.asarray(X) idiom, matching every other estimator's validation pattern in the codebase
 - [Phase 03]: [Phase 03-02] Kept the QA-02 _MODEL_CACHE device-mutation fix as a separate labeled commit from the Encoder Pipeline-wrapper change in embedding.py, per ROADMAP criterion 5
 - [Phase 03]: [Phase 03-02] _load_model now constructs SentenceTransformer(model_name, device=device) at load time instead of mutating a cached model's device after the fact, matching morphology.py's already-correct tuple-keyed _PIPELINE_CACHE pattern
+- [Phase 03]: [Phase 03-03] MultiscaleInfoDynamics.transform()/fit_transform() return self.scalogram_ as the primary array; MultiscaleInfoDynamics may be legitimately Pipeline-terminal (D-03 discretion)
+- [Phase 03]: [Phase 03-03] Split single-file pipeline.py rewrite into two atomic task commits by staging an intermediate state (InfoDynamics decoupled, MultiscaleInfoDynamics + text imports temporarily unchanged)
 
 ### Pending Todos
 
@@ -106,6 +109,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-14T12:11:51.334Z
+Last session: 2026-07-14T12:19:04.838Z
 Stopped at: Completed 03-02-PLAN.md
 Resume file: None
