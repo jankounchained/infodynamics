@@ -47,12 +47,4 @@ setup(
         'typing-extensions>=4.8.0',
     ],
     extras_require=extras_require,
-    entry_points={
-        'console_scripts': [
-            'infodynamics-pack=infodynamics.shipping:pack_main',
-            'infodynamics-pull=infodynamics.shipping:pull_main',
-            'infodynamics-verify=infodynamics.shipping:verify_main',
-            'infodynamics-init-project=infodynamics.shipping:init_project_main',
-        ],
-    },
 )
