@@ -13,7 +13,7 @@ This milestone extracts a lean, modality-agnostic, sklearn-composable `infodynam
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Baseline & Removal** - Capture the golden-output snapshot, then strip the dashboard, cache/shipping infra, and their entry points/tests
+- [x] **Phase 1: Baseline & Removal** - Capture the golden-output snapshot, then strip the dashboard, cache/shipping infra, and their entry points/tests (completed 2026-07-14)
 - [ ] **Phase 2: Reorganize Into Core + Text On-Ramp** - Pure `git mv` of segmentation/embedding/morphology under `infodynamics.text`; zero behavior change
 - [ ] **Phase 3: Decouple the Pipeline** - Make the analysis pipeline ndarray-only and every public estimator genuinely `Pipeline`-composable; fix known bugs and test debt
 - [ ] **Phase 4: Curate the Public API** - Explicit curated exports, canonical usage example, old→new import migration notes
@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. `pytest --collect-only -q` reports zero collection errors after `tests/test_manifest.py` is removed
   5. A repo-wide grep for `dashboard`, `shipping`, `cache_contract`, `bench_core`, `build_dashboard_artifacts` returns no hits in surviving package code, `setup.py`, or docs
 
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans complete
 Plans:
 **Wave 1**
 
@@ -46,7 +46,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 01-03-PLAN.md — Verification gate: full suite green at exactly 68 tests, scoped grep sweep clean, console-script shims confirmed gone
+- [x] 01-03-PLAN.md — Verification gate: full suite green at exactly 68 tests, scoped grep sweep clean, console-script shims confirmed gone
 
 ### Phase 2: Reorganize Into Core + Text On-Ramp
 
@@ -114,7 +114,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Baseline & Removal | 2/3 | In Progress|  |
+| 1. Baseline & Removal | 3/3 | Complete   | 2026-07-14 |
 | 2. Reorganize Into Core + Text On-Ramp | 0/TBD | Not started | - |
 | 3. Decouple the Pipeline | 0/TBD | Not started | - |
 | 4. Curate the Public API | 0/TBD | Not started | - |

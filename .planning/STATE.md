@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: baseline-removal
-status: executing
+status: verifying
 stopped_at: ROADMAP.md and STATE.md created; REQUIREMENTS.md traceability populated; awaiting user approval of roadmap draft
-last_updated: "2026-07-14T08:10:30.729Z"
+last_updated: "2026-07-14T08:18:58.944Z"
 last_activity: 2026-07-14
 last_activity_desc: Phase 01 execution started
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 0
+  completed_plans: 3
+  percent: 20
 ---
 
 # Project State
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 
 Phase: 01 (baseline-removal) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-14 — Phase 01 execution started
 
 Progress: [░░░░░░░░░░] 0%
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase 01 P01 | 15 | 2 tasks | 5 files |
 | Phase 01-baseline-removal P02 | 16min | 2 tasks | 11 files |
+| Phase 01 P03 | 12min | 2 tasks | 0 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,7 @@ Recent decisions affecting current work:
 - Roadmap: all flagged bugs (QA-02) and test debt (QA-03) fixed this milestone, attached to Phase 3 as their own labeled commits — not deferred
 - [Phase 01-01]: Golden-output snapshot pattern established: tests/golden/ one-time capture script + checked-in .npz/.json + permanent pytest comparison test, reused at close of every subsequent phase
 - [Phase 01-02]: Recalculated expected post-removal pytest collection count as 72 (not the plan's hardcoded 68), accounting for 4 golden-baseline tests Plan 01 added before this plan ran
+- [Phase 01-03]: Investigated test_window_size failure surfaced during full-suite re-run; confirmed pre-existing (predates Phase 01 per .hypothesis/ cache mtime and git history) and already tracked as QA-03 for Phase 3 fix — left unfixed per scope boundary.
 
 ### Pending Todos
 
@@ -78,6 +80,7 @@ None yet.
 ### Blockers/Concerns
 
 - Phase 3 (Decouple the Pipeline) is the substantive, riskiest phase — flagged in research for deeper design discussion at plan time (transform(X_new) semantics, dict-returning fit_transform vs Pipeline chaining, possible TextInfoDynamics convenience wrapper). See ROADMAP.md Phase 3 "Research flag".
+- test_window_size (tests/test_infodynamics_class.py) fails on window_size=0 edge case — pre-existing bug, already tracked as QA-03, scheduled for Phase 3 fix with a deliberate golden-snapshot update.
 
 ## Deferred Items
 
@@ -89,6 +92,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-14T08:08:49.510Z
+Last session: 2026-07-14T08:17:44.379Z
 Stopped at: ROADMAP.md and STATE.md created; REQUIREMENTS.md traceability populated; awaiting user approval of roadmap draft
 Resume file: None
