@@ -31,7 +31,7 @@ from infodynamics import (
     WindowedRollingDistance,
     structure_descriptors,
 )
-from infodynamics.embedding import Encoder
+from infodynamics.text.embedding import Encoder
 
 # --- Text fixtures -----------------------------------------------------
 # Inline, committed string constants (not the untracked root CSV/UDPipe

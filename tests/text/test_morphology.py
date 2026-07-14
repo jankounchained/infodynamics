@@ -9,7 +9,7 @@ from spacy.tokens import Doc  # noqa: E402
 
 import infodynamics.pipeline as pipeline_module  # noqa: E402
 from infodynamics import MorphologicalEncoder  # noqa: E402
-from infodynamics.morphology import encode_all_feature_groups  # noqa: E402
+from infodynamics.text.morphology import encode_all_feature_groups  # noqa: E402
 from infodynamics.pipeline import MultiscaleInfoDynamics  # noqa: E402
 
 

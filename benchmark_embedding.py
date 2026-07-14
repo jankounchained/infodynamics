@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Benchmarks embedding throughput of one or more HuggingFace Hub encoder
-models, using infodynamics.embedding.Encoder.
+models, using infodynamics.text.embedding.Encoder.
 
 Measures, per model:
   - load_time_s     time to load the model and run one warmup batch
@@ -28,8 +28,8 @@ from typing import List, Optional
 import numpy as np
 import pandas as pd
 
-from infodynamics.embedding import Encoder
-from infodynamics.segmentation import segment
+from infodynamics.text.embedding import Encoder
+from infodynamics.text.segmentation import segment
 
 _SENTENCE_POOL = [
     "The quick brown fox jumps over the lazy dog near the riverbank.",

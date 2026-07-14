@@ -1,7 +1,7 @@
 """ """
 import pytest
 
-from infodynamics.segmentation import Chunk, segment, strip_markdown
+from infodynamics.text.segmentation import Chunk, segment, strip_markdown
 
 TEXT = "Hello world. This is a test! Is it working?\n\nNew paragraph here. Another sentence."
 
