@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 05-verify
 source: [05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md]
 started: 2026-07-14T18:28:59Z
-updated: 2026-07-14T18:35:00Z
+updated: 2026-07-14T18:45:00Z
 ---
 
 ## Current Test
@@ -63,5 +63,17 @@ skipped: 0
   reason: "User reported: CI fails. Two tests give a numerical error compared to golden baseline. test_text_signals_match_golden_baseline and test_multiscale_structure_matches_golden_baseline"
   severity: blocker
   test: 3
-  artifacts: []  # Filled by diagnosis
-  missing: []    # Filled by diagnosis
+  root_cause: "atol=1e-8 is float64-grade precision applied to float32-precision data. Encoder.encode() returns sentence-transformers/PyTorch's default float32 embeddings (never explicitly chosen); everything downstream (cosine-similarity SSMs, resonance/novelty/transience signals) inherits that dtype. The golden baseline was captured only on macOS (Apple Accelerate/vecLib BLAS); CI runs on ubuntu-latest (OpenBLAS/manylinux BLAS). Same code, same math, different platform BLAS backend -> non-associative float32 summation order -> ~1 ULP (1.19e-7) difference, exceeding atol=1e-8 on a handful of elements. Confirmed NOT a v0.5 refactor regression: recomputing on the same macOS machine that holds the baseline reproduces it with 0/27 array mismatches, even with materially newer numpy/scikit-learn/torch/sentence-transformers versions. This is the first time the suite has ever run on Linux/CI (05-03 added CI in this same phase) — the cross-platform gap was structurally guaranteed to surface, independent of code correctness."
+  artifacts:
+    - path: "tests/test_golden_baseline.py"
+      issue: "rtol=1e-5, atol=1e-8 tolerance is too tight for float32-precision, cross-platform (macOS vs Linux BLAS) data"
+    - path: "infodynamics/text/embedding.py"
+      issue: "Encoder.encode() inherits float32 dtype from sentence-transformers/PyTorch convert_to_numpy=True — never an explicit, documented choice"
+    - path: "infodynamics/scalogram.py"
+      issue: "self_similarity_matrix() preserves float32 through the SSM computation, propagating the precision limit"
+    - path: "tests/golden/capture_baseline.py"
+      issue: "Baseline was captured on macOS only, never validated against a second platform before CI (05-03) was added"
+  missing:
+    - "Loosen/adjust the golden-baseline tolerance to reflect float32 reality (e.g. raise atol to ~1e-6, or drop the fixed atol in favor of rtol-only comparison for float32-derived arrays)"
+    - "Document that byte-exact cross-platform reproducibility of float32 transformer-derived signals is not achievable; scope QA-01 'no numerical drift' as same-platform determinism plus a looser cross-platform tolerance band"
+  debug_session: .planning/debug/golden-baseline-ci-drift.md
