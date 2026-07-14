@@ -19,7 +19,7 @@ Requirements for this milestone: extract a lean, modality-agnostic, sklearn-comp
 
 - [x] **CORE-01**: Core analysis modules (`metrics`, `time_series`, `scalogram`, `clustering/`, `viz`, `util`, `pipeline`) live at the top-level `infodynamics` namespace and import nothing from `infodynamics.text`
 - [x] **CORE-02**: Core estimators (`InfoDynamics`, `MultiscaleInfoDynamics`, `WindowedRollingDistance`, `Scalogram`, `FooteNovelty`, `SignalClusterer`) accept numeric `ndarray` / array-like input and never accept raw text or `Chunk` objects
-- [ ] **CORE-03**: A core-only path (numeric array in → signals out) runs with only the required core dependencies installed (no text or heavy extras present)
+- [x] **CORE-03**: A core-only path (numeric array in → signals out) runs with only the required core dependencies installed (no text or heavy extras present)
 
 ### Text on-ramp
 
@@ -39,7 +39,7 @@ Requirements for this milestone: extract a lean, modality-agnostic, sklearn-comp
 - [x] **QA-01**: A golden-output baseline is captured before any refactor; core numerical outputs (`novelty`/`transience`/`resonance`, SSM, scalogram, Foote novelty, descriptors, cluster labels/barycenters) match it at milestone completion (no numerical drift)
 - [x] **QA-02**: Known bugs are fixed, each as its own labeled commit: `averaging_weigts` → `averaging_weights` rename; `WindowedRollingDistance.__init__` stores params verbatim with validation moved to `fit`; `_MODEL_CACHE` keyed by `device` with no in-place mutation; `_validate_data` completed
 - [x] **QA-03**: Test debt is resolved: empty stubs (`test_transience_calculation`, `test_negative_values_in_input_data`, `test_very_small_numbers`) are implemented; the `test_window_size` assertion is corrected to match actual output
-- [ ] **QA-04**: The full `pytest` suite passes against the reorganized package; the collected test count is reconciled against the pre-refactor baseline (no silent coverage loss beyond the known-removed `test_manifest.py`)
+- [x] **QA-04**: The full `pytest` suite passes against the reorganized package; the collected test count is reconciled against the pre-refactor baseline (no silent coverage loss beyond the known-removed `test_manifest.py`)
 
 ## v2 Requirements
 
@@ -94,8 +94,8 @@ Each requirement maps to exactly one phase.
 | QA-03 | Phase 3 | Complete |
 | API-03 | Phase 4 | Complete |
 | API-04 | Phase 4 | Complete |
-| CORE-03 | Phase 5 | Pending |
-| QA-04 | Phase 5 | Pending |
+| CORE-03 | Phase 5 | Complete |
+| QA-04 | Phase 5 | Complete |
 
 **Coverage:**
 

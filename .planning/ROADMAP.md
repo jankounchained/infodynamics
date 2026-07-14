@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Reorganize Into Core + Text On-Ramp** - Pure `git mv` of segmentation/embedding/morphology under `infodynamics.text`; zero behavior change (completed 2026-07-14)
 - [x] **Phase 3: Decouple the Pipeline** - Make the analysis pipeline ndarray-only and every public estimator genuinely `Pipeline`-composable; fix known bugs and test debt (completed 2026-07-14)
 - [x] **Phase 4: Curate the Public API** - Explicit curated exports, canonical usage example, old→new import migration notes (completed 2026-07-14)
-- [ ] **Phase 5: Verify** - Empirically prove the finish line: grep-clean, minimal-venv smoke test, full suite green, no numerical drift
+- [x] **Phase 5: Verify** - Empirically prove the finish line: grep-clean, minimal-venv smoke test, full suite green, no numerical drift (completed 2026-07-14)
 
 ## Phase Details
 
@@ -145,7 +145,7 @@ Plans:
   4. The full `pytest` suite passes; the collected test count is reconciled against the pre-refactor baseline, with only the known-removed `test_manifest.py` accounting for any drop
   5. The Phase 1 golden-output snapshot still matches for all preserved numerical behavior; every public estimator passes a final `get_params`/`set_params`/`clone` spot-check
 
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans complete
 Plans:
 **Wave 1**
 
@@ -154,7 +154,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 05-02-PLAN.md — Run all 5 ROADMAP criteria checks (scoped grep sweep, fresh no-extras venv, full pytest + 81→68→91 reconciliation, golden + clone spot-check) and author `05-VERIFICATION.md` evidence transcript (D-05, CORE-03, QA-04)
+- [x] 05-02-PLAN.md — Run all 5 ROADMAP criteria checks (scoped grep sweep, fresh no-extras venv, full pytest + 81→68→91 reconciliation, golden + clone spot-check) and author `05-VERIFICATION.md` evidence transcript (D-05, CORE-03, QA-04)
 
 ## Progress
 
@@ -167,4 +167,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Reorganize Into Core + Text On-Ramp | 2/2 | Complete    | 2026-07-14 |
 | 3. Decouple the Pipeline | 7/7 | Complete    | 2026-07-14 |
 | 4. Curate the Public API | 2/2 | Complete    | 2026-07-14 |
-| 5. Verify | 2/3 | In Progress|  |
+| 5. Verify | 3/3 | Complete   | 2026-07-14 |
