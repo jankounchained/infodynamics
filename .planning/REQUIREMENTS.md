@@ -17,15 +17,15 @@ Requirements for this milestone: extract a lean, modality-agnostic, sklearn-comp
 
 ### Core (modality-agnostic)
 
-- [ ] **CORE-01**: Core analysis modules (`metrics`, `time_series`, `scalogram`, `clustering/`, `viz`, `util`, `pipeline`) live at the top-level `infodynamics` namespace and import nothing from `infodynamics.text`
+- [x] **CORE-01**: Core analysis modules (`metrics`, `time_series`, `scalogram`, `clustering/`, `viz`, `util`, `pipeline`) live at the top-level `infodynamics` namespace and import nothing from `infodynamics.text`
 - [ ] **CORE-02**: Core estimators (`InfoDynamics`, `MultiscaleInfoDynamics`, `WindowedRollingDistance`, `Scalogram`, `FooteNovelty`, `SignalClusterer`) accept numeric `ndarray` / array-like input and never accept raw text or `Chunk` objects
 - [ ] **CORE-03**: A core-only path (numeric array in → signals out) runs with only the required core dependencies installed (no text or heavy extras present)
 
 ### Text on-ramp
 
-- [ ] **TEXT-01**: `segmentation`, `embedding`, and `morphology` are relocated under an `infodynamics.text` subpackage
+- [x] **TEXT-01**: `segmentation`, `embedding`, and `morphology` are relocated under an `infodynamics.text` subpackage
 - [ ] **TEXT-02**: `infodynamics.text` exposes a `TextSegmenter` estimator wrapping `segment()`; `Encoder` and `MorphologicalEncoder` are Pipeline-legal (`fit`/`transform`/`get_params`/`set_params`) and emit the `(n_chunks, n_features)` array contract the core consumes
-- [ ] **TEXT-03**: All heavy optional dependencies (sentence-transformers, spacy-udpipe, textdescriptives, tslearn) are imported lazily at point-of-use; `import infodynamics` and `import infodynamics.text` succeed without them, failing only at estimator instantiation with an actionable `ImportError`
+- [x] **TEXT-03**: All heavy optional dependencies (sentence-transformers, spacy-udpipe, textdescriptives, tslearn) are imported lazily at point-of-use; `import infodynamics` and `import infodynamics.text` succeed without them, failing only at estimator instantiation with an actionable `ImportError`
 
 ### Public API & sklearn composability
 
@@ -83,9 +83,9 @@ Each requirement maps to exactly one phase.
 | RM-03 | Phase 1 | Complete |
 | RM-04 | Phase 1 | Complete |
 | RM-05 | Phase 1 | Complete |
-| TEXT-01 | Phase 2 | Pending |
-| TEXT-03 | Phase 2 | Pending |
-| CORE-01 | Phase 2 | Pending |
+| TEXT-01 | Phase 2 | Complete |
+| TEXT-03 | Phase 2 | Complete |
+| CORE-01 | Phase 2 | Complete |
 | CORE-02 | Phase 3 | Pending |
 | TEXT-02 | Phase 3 | Pending |
 | API-01 | Phase 3 | Pending |

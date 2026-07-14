@@ -64,11 +64,11 @@ Plans:
   3. A grep for `from .text` / `from infodynamics.text` / `import infodynamics.text` across `infodynamics/*.py` and `infodynamics/clustering/*.py` (excluding `infodynamics/text/`, and — per D-02/D-04 — the documented `infodynamics/pipeline.py` interim exception and the `infodynamics/__init__.py` re-export barrel) returns zero hits. *(Phase 2 amendment: `pipeline.py`'s live text import is a documented interim exception resolved in Phase 3 per D-01/D-02; `__init__.py`'s `infodynamics.text.*` re-exports are legitimate this phase per D-04 and are curated in Phase 4 per API-03. The zero-hit sweep therefore targets the core analysis modules — metrics, time_series, scalogram, viz, util, clustering/* — which is CORE-01's own module list.)*
   4. The full pytest suite is green with only module locations changed; the Phase 1 golden-output snapshot still matches exactly (confirms this is a pure move, no drift)
 
-**Plans**: 0/2 plans complete
+**Plans**: 1/2 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 02-01-PLAN.md — `git mv` segmentation/embedding/morphology into `infodynamics/text/`, mirror the two tests under `tests/text/`, and fix every tracked import-path call site (pipeline.py imports + docstrings, __init__.py re-exports, capture_baseline.py, benchmark_embedding.py); package stays importable, golden snapshot untouched
+- [x] 02-01-PLAN.md — `git mv` segmentation/embedding/morphology into `infodynamics/text/`, mirror the two tests under `tests/text/`, and fix every tracked import-path call site (pipeline.py imports + docstrings, __init__.py re-exports, capture_baseline.py, benchmark_embedding.py); package stays importable, golden snapshot untouched
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -127,7 +127,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Baseline & Removal | 4/4 | Complete    | 2026-07-14 |
-| 2. Reorganize Into Core + Text On-Ramp | 0/2 | Not started | - |
+| 2. Reorganize Into Core + Text On-Ramp | 1/2 | In Progress|  |
 | 3. Decouple the Pipeline | 0/TBD | Not started | - |
 | 4. Curate the Public API | 0/TBD | Not started | - |
 | 5. Verify | 0/TBD | Not started | - |
