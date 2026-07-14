@@ -30,7 +30,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. `setup.py` has zero `infodynamics-pack`/`-pull`/`-verify`/`-init-project` console-script entries; `pip install -e .` registers no script pointing at removed code
   4. `pytest --collect-only -q` reports zero collection errors after `tests/test_manifest.py` is removed
   5. A repo-wide grep for `dashboard`, `shipping`, `cache_contract`, `bench_core`, `build_dashboard_artifacts` returns no hits in surviving package code, `setup.py`, or docs
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — Capture golden-output baseline (all six estimators) and wire it into a permanent pytest comparison test
+- [ ] 01-02-PLAN.md — Remove dashboard/, cache_contract.py, shipping.py, test_manifest.py; strip setup.py entry_points; reinstall to clear stale shims
+- [ ] 01-03-PLAN.md — Verification gate: full suite green at exactly 68 tests, scoped grep sweep clean, console-script shims confirmed gone
 
 ### Phase 2: Reorganize Into Core + Text On-Ramp
 **Goal**: Core and text on-ramp code live at their final module locations, split cleanly, with no behavior change and no core→text dependency.
@@ -86,7 +90,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Baseline & Removal | 0/TBD | Not started | - |
+| 1. Baseline & Removal | 0/3 | Planned | - |
 | 2. Reorganize Into Core + Text On-Ramp | 0/TBD | Not started | - |
 | 3. Decouple the Pipeline | 0/TBD | Not started | - |
 | 4. Curate the Public API | 0/TBD | Not started | - |
