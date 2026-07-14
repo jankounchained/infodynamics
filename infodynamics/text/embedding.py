@@ -1,14 +1,14 @@
 """
 Loads HuggingFace Hub encoder models and embeds text chunks.
 """
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-_MODEL_CACHE: Dict[str, "object"] = {}
+_MODEL_CACHE: Dict[Tuple[str, Optional[str]], "object"] = {}
 
 
-def _load_model(model_name: str):
+def _load_model(model_name: str, device: Optional[str] = None):
     try:
         from sentence_transformers import SentenceTransformer
     except ImportError as e:
@@ -17,9 +17,13 @@ def _load_model(model_name: str):
             "Install it with `pip install infodynamics[embedding]`."
         ) from e
 
-    if model_name not in _MODEL_CACHE:
-        _MODEL_CACHE[model_name] = SentenceTransformer(model_name)
-    return _MODEL_CACHE[model_name]
+    key = (model_name, device)
+    if key not in _MODEL_CACHE:
+        if device is not None:
+            _MODEL_CACHE[key] = SentenceTransformer(model_name, device=device)
+        else:
+            _MODEL_CACHE[key] = SentenceTransformer(model_name)
+    return _MODEL_CACHE[key]
 
 
 class Encoder:
@@ -38,9 +42,7 @@ class Encoder:
         self.normalize = normalize
 
     def encode(self, texts: List[str]) -> np.ndarray:
-        model = _load_model(self.model_name)
-        if self.device is not None:
-            model.to(self.device)
+        model = _load_model(self.model_name, self.device)
 
         embeddings = model.encode(
             texts,
