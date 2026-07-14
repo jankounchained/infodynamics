@@ -1,10 +1,10 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
+milestone: v0.5
+milestone_name: Core Extraction
 current_phase: 5
 status: Awaiting next milestone
-stopped_at: Completed 05-02-PLAN.md
+stopped_at: Milestone v0.5 archived
 last_updated: "2026-07-14T17:45:46.089Z"
 last_activity: 2026-07-14
 last_activity_desc: Milestone v0.5 completed and archived
@@ -21,10 +21,10 @@ current_phase_name: verify
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-13)
+See: .planning/PROJECT.md (updated 2026-07-14)
 
 **Core value:** One clean, sklearn-compatible library that computes novelty/structure signals from any numeric time series — with text as a first-class but separable on-ramp — free of dashboard and case-study baggage.
-**Current focus:** Phase 05 — verify
+**Current focus:** Planning next milestone
 
 ## Current Position
 
@@ -80,41 +80,7 @@ Last activity: 2026-07-14 — Milestone v0.5 completed and archived
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- Roadmap: subtractive-before-additive, move-before-refactor phase ordering (Remove → Reorganize → Decouple → Curate → Verify) chosen so numerical drift stays bisectable
-- Roadmap: golden-output baseline captured as prerequisite work inside Phase 1, re-verified at close of every subsequent phase
-- Roadmap: all flagged bugs (QA-02) and test debt (QA-03) fixed this milestone, attached to Phase 3 as their own labeled commits — not deferred
-- [Phase 01-01]: Golden-output snapshot pattern established: tests/golden/ one-time capture script + checked-in .npz/.json + permanent pytest comparison test, reused at close of every subsequent phase
-- [Phase 01-02]: Recalculated expected post-removal pytest collection count as 72 (not the plan's hardcoded 68), accounting for 4 golden-baseline tests Plan 01 added before this plan ran
-- [Phase 01-03]: Investigated test_window_size failure surfaced during full-suite re-run; confirmed pre-existing (predates Phase 01 per .hypothesis/ cache mtime and git history) and already tracked as QA-03 for Phase 3 fix — left unfixed per scope boundary.
-- [Phase ?]: [Phase 01-04] Implemented both halves of CR-01 fix (importorskip guards AND self-sufficient test extra) per reviewer recommendation, rather than choosing one
-- [Phase ?]: benchmark_embedding.py: fixed its two imports + docstring in this pass rather than deferring (tracked file, zero-dangling-reference spirit)
-- [Phase ?]: infodynamics/text/__init__.py stays docstring-only, no re-exports yet (D-03) — export curation deferred to Phase 4
-- [Phase ?]: Confirmed test_window_size failure (71/1) is pre-existing QA-03, not a Phase 2 regression -- deferred to Phase 3 per existing decision log
-- [Phase 03]: [Phase 03-01] Locked WindowedRollingDistance's stacked-array column order as novelty/transience/resonance (N_hat/T_hat/R_hat), per D-03's discretion note
-- [Phase 03]: [Phase 03-01] Converged WindowedRollingDistance._validate_data to a single np.asarray(X) idiom, matching every other estimator's validation pattern in the codebase
-- [Phase 03]: [Phase 03-02] Kept the QA-02 _MODEL_CACHE device-mutation fix as a separate labeled commit from the Encoder Pipeline-wrapper change in embedding.py, per ROADMAP criterion 5
-- [Phase 03]: [Phase 03-02] _load_model now constructs SentenceTransformer(model_name, device=device) at load time instead of mutating a cached model's device after the fact, matching morphology.py's already-correct tuple-keyed _PIPELINE_CACHE pattern
-- [Phase 03]: [Phase 03-03] MultiscaleInfoDynamics.transform()/fit_transform() return self.scalogram_ as the primary array; MultiscaleInfoDynamics may be legitimately Pipeline-terminal (D-03 discretion)
-- [Phase 03]: [Phase 03-03] Split single-file pipeline.py rewrite into two atomic task commits by staging an intermediate state (InfoDynamics decoupled, MultiscaleInfoDynamics + text imports temporarily unchanged)
-- [Phase 03-04]: Fixed WindowedRollingDistance window_size=0 crash/NaN bug (Rule 1) surfaced while implementing test_transience_calculation's required w=0 no-NaN assertion
-- [Phase ?]: [Phase 03-05] Kept Task 1 (TextInfoDynamics) and Task 2 (TextMultiscaleInfoDynamics + __init__.py re-exports) as two separate atomic commits per the plan's task breakdown, even though both land in infodynamics/text/pipeline.py
-- [Phase ?]: [Phase 03-05] Task 1's verify block references importing TextInfoDynamics from infodynamics.text, valid only after Task 2's __init__.py re-export lands - verified functionally via direct submodule import first, then re-ran the plan's literal verify command after Task 2 completed
-- [Phase ?]: [Phase 03-06] No numeric-behavior changes were needed to migrate tests to the Text* wrappers -- purely call-site/API-shape migration, empirically confirming CORE-02/QA-02's decoupling and bug fixes stayed non-numerical
-- [Phase ?]: [Phase 03-06] Golden baseline re-verified: tests/test_golden_baseline.py passes 4/4 against the EXISTING, unmodified baseline_arrays.npz/baseline_meta.json -- zero numerical drift proven across Phase 3's Plans 01/02/03/05
-- [Phase ?]: [Phase 03-07] Split the single new test file into two atomic commits (clone round-trip, then Pipeline composition) matching the plan's Task 1/Task 2 boundary
-- [Phase ?]: [Phase 03-07] test_pipeline_with_real_encoder uses a 50-sentence synthetic text (not the shared 10-sentence fixture) because MultiscaleInfoDynamics()'s literal criterion-4 defaults require n_chunks >= 43 for every scale/radius to fit
-- [Phase 04-01]: infodynamics.__all__ = exactly 8 core symbols per D-01; zero .text imports remain (D-05)
-- [Phase 04-01]: infodynamics.text.__all__ folds in Encoder/MorphologicalEncoder/Chunk/segment/strip_markdown alongside the 3 existing Text* wrappers, per Claude's-discretion note
-- [Phase 04-02]: examples/basic_usage.py demonstrates core_only_demo() (ndarray -> InfoDynamics/MultiscaleInfoDynamics, zero infodynamics.text imports) and pipeline_demo() (sklearn.pipeline.Pipeline([TextSegmenter, Encoder, MultiscaleInfoDynamics]).fit_transform), no examples/__init__.py
-- [Phase 04-02]: CHANGELOG.md written as a flat old->new import migration table (not Keep-a-Changelog prose), kept as a dedicated root file rather than folded into README.md
-- [Phase 05-01]: Wrapped only the encode()-site textdescriptives import in try/except, leaving every other line of encode() byte-identical, per D-02 no-behavior-change constraint — Plan-scoped minimal fix
-- [Phase 05-01]: Plan's verify grep count expected 4 pre-existing sibling guards; actual pre-existing count was 4, post-fix is 5 not the plan's literal 4 -- documented as verification-arithmetic note, no functional impact
-- [Phase 05]: [Phase 05-03] Re-verified actions/checkout and actions/setup-python latest major tags via gh api at execution time rather than trusting RESEARCH.md's snapshot; actions/checkout had advanced to v7 since research (was v6), pinned accordingly
-- [Phase ?]: [Phase 05-02]: Recorded the actual reconciled pytest count as 92 (not RESEARCH.md's pre-Plan-01 projection of 91) in 05-VERIFICATION.md, since Plan 05-01 added one regression test in this phase's own Wave 1
-- [Phase ?]: [Phase 05-02]: Documented Task 1's hardcoded '91 tests collected' <verify> string as a plan-arithmetic note rather than escalating, since the underlying facts (grep-clean, count reconciled at 92) are both independently true
+Milestone v0.5's decision log has been consolidated into PROJECT.md's Key Decisions table and `.planning/RETROSPECTIVE.md`. The full per-plan decision trail remains in `.planning/milestones/v0.5-ROADMAP.md`, phase SUMMARY.md files, and git history. Cleared here to keep STATE.md lean for the next milestone.
 
 ### Pending Todos
 
@@ -122,8 +88,7 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 3 (Decouple the Pipeline) is the substantive, riskiest phase — flagged in research for deeper design discussion at plan time (transform(X_new) semantics, dict-returning fit_transform vs Pipeline chaining, possible TextInfoDynamics convenience wrapper). See ROADMAP.md Phase 3 "Research flag".
-- test_window_size (tests/test_infodynamics_class.py) fails on window_size=0 edge case — pre-existing bug, already tracked as QA-03, scheduled for Phase 3 fix with a deliberate golden-snapshot update.
+- Known, non-blocking tech debt carried forward from v0.5: `.github/workflows/ci.yml` installs `.[test]`, which doesn't include the `morphology` extra, so `tests/text/test_morphology.py` silently skips on a real CI runner instead of running (code review finding WR-01, phase 05). Worth fixing before relying on CI as a real regression gate.
 
 ## Deferred Items
 
