@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 4
-current_phase_name: Curate the Public API
+current_phase: 04
+current_phase_name: curate-the-public-api
 status: executing
 stopped_at: Phase 4 context gathered
-last_updated: "2026-07-14T14:07:21.463Z"
+last_updated: "2026-07-14T14:40:34.084Z"
 last_activity: 2026-07-14
-last_activity_desc: Phase 03 complete, transitioned to Phase 4
+last_activity_desc: Phase 04 execution started
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 13
-  completed_plans: 13
+  total_plans: 15
+  completed_plans: 14
   percent: 60
 ---
 
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-13)
 
 **Core value:** One clean, sklearn-compatible library that computes novelty/structure signals from any numeric time series — with text as a first-class but separable on-ramp — free of dashboard and case-study baggage.
-**Current focus:** Phase 03 — decouple-the-pipeline
+**Current focus:** Phase 04 — curate-the-public-api
 
 ## Current Position
 
-Phase: 4 — Curate the Public API
-Plan: Not started
+Phase: 04 (curate-the-public-api) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-07-14 — Phase 03 complete, transitioned to Phase 4
+Last activity: 2026-07-14 — Phase 04 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -70,6 +70,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03 P05 | 8min | 2 tasks | 2 files |
 | Phase 03 P06 | 6min | 2 tasks tasks | 3 files files |
 | Phase 03 P07 | 6min | 2 tasks | 1 files |
+| Phase 04 P01 | 6min | 2 tasks tasks | 4 files files |
 
 ## Accumulated Context
 
@@ -101,6 +102,8 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 03-06] Golden baseline re-verified: tests/test_golden_baseline.py passes 4/4 against the EXISTING, unmodified baseline_arrays.npz/baseline_meta.json -- zero numerical drift proven across Phase 3's Plans 01/02/03/05
 - [Phase ?]: [Phase 03-07] Split the single new test file into two atomic commits (clone round-trip, then Pipeline composition) matching the plan's Task 1/Task 2 boundary
 - [Phase ?]: [Phase 03-07] test_pipeline_with_real_encoder uses a 50-sentence synthetic text (not the shared 10-sentence fixture) because MultiscaleInfoDynamics()'s literal criterion-4 defaults require n_chunks >= 43 for every scale/radius to fit
+- [Phase 04-01]: infodynamics.__all__ = exactly 8 core symbols per D-01; zero .text imports remain (D-05)
+- [Phase 04-01]: infodynamics.text.__all__ folds in Encoder/MorphologicalEncoder/Chunk/segment/strip_markdown alongside the 3 existing Text* wrappers, per Claude's-discretion note
 
 ### Pending Todos
 
@@ -121,6 +124,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-14T13:37:23.449Z
+Last session: 2026-07-14T14:39:03.862Z
 Stopped at: Phase 4 context gathered
 Resume file: .planning/phases/04-curate-the-public-api/04-CONTEXT.md

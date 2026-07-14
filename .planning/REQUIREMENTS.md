@@ -31,7 +31,7 @@ Requirements for this milestone: extract a lean, modality-agnostic, sklearn-comp
 
 - [x] **API-01**: Every public estimator implements `fit` / `transform` / `fit_transform` with working `get_params` / `set_params` and passes an `sklearn.base.clone()` round-trip
 - [x] **API-02**: The text on-ramp → analysis flow composes end-to-end in an `sklearn.pipeline.Pipeline` (`fit_transform` runs; `set_params(step__param=...)` takes effect), verified by `tests/test_pipeline_composition.py`
-- [ ] **API-03**: Public API is curated — explicit `__all__` at `infodynamics` and `infodynamics.text`; the core `__init__.py` never imports from `.text`
+- [x] **API-03**: Public API is curated — explicit `__all__` at `infodynamics` and `infodynamics.text`; the core `__init__.py` never imports from `.text`
 - [ ] **API-04**: A canonical example demonstrates both core-only (`ndarray` in) use and full `Pipeline` composition; a CHANGELOG/migration note maps old→new import paths for moved symbols
 
 ### Quality & correctness
@@ -92,7 +92,7 @@ Each requirement maps to exactly one phase.
 | API-02 | Phase 3 | Complete |
 | QA-02 | Phase 3 | Complete |
 | QA-03 | Phase 3 | Complete |
-| API-03 | Phase 4 | Pending |
+| API-03 | Phase 4 | Complete |
 | API-04 | Phase 4 | Pending |
 | CORE-03 | Phase 5 | Pending |
 | QA-04 | Phase 5 | Pending |

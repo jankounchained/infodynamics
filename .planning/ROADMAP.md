@@ -122,11 +122,11 @@ Plans:
   3. A canonical example demonstrates both core-only usage (`ndarray` in, no text on-ramp) and full `Pipeline` composition (text on-ramp → analysis)
   4. A CHANGELOG/migration note lists the old→new import path for every symbol that moved during this milestone
 
-**Plans**: 2 plans
+**Plans**: 1/2 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — Curate both `__init__.py` export surfaces (explicit `__all__`: 8 core symbols with zero `.text` imports per D-01..D-05; 8 text symbols), migrate the one broken test import, lock it with `tests/test_public_api.py` (API-03)
+- [x] 04-01-PLAN.md — Curate both `__init__.py` export surfaces (explicit `__all__`: 8 core symbols with zero `.text` imports per D-01..D-05; 8 text symbols), migrate the one broken test import, lock it with `tests/test_public_api.py` (API-03)
 
 **Wave 2** *(blocked on Wave 1)*
 
@@ -157,5 +157,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Baseline & Removal | 4/4 | Complete    | 2026-07-14 |
 | 2. Reorganize Into Core + Text On-Ramp | 2/2 | Complete    | 2026-07-14 |
 | 3. Decouple the Pipeline | 7/7 | Complete    | 2026-07-14 |
-| 4. Curate the Public API | 0/2 | Not started | - |
+| 4. Curate the Public API | 1/2 | In Progress|  |
 | 5. Verify | 0/TBD | Not started | - |
