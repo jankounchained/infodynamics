@@ -24,7 +24,7 @@ Requirements for this milestone: extract a lean, modality-agnostic, sklearn-comp
 ### Text on-ramp
 
 - [x] **TEXT-01**: `segmentation`, `embedding`, and `morphology` are relocated under an `infodynamics.text` subpackage
-- [ ] **TEXT-02**: `infodynamics.text` exposes a `TextSegmenter` estimator wrapping `segment()`; `Encoder` and `MorphologicalEncoder` are Pipeline-legal (`fit`/`transform`/`get_params`/`set_params`) and emit the `(n_chunks, n_features)` array contract the core consumes
+- [x] **TEXT-02**: `infodynamics.text` exposes a `TextSegmenter` estimator wrapping `segment()`; `Encoder` and `MorphologicalEncoder` are Pipeline-legal (`fit`/`transform`/`get_params`/`set_params`) and emit the `(n_chunks, n_features)` array contract the core consumes
 - [x] **TEXT-03**: All heavy optional dependencies (sentence-transformers, spacy-udpipe, textdescriptives, tslearn) are imported lazily at point-of-use; `import infodynamics` and `import infodynamics.text` succeed without them, failing only at estimator instantiation with an actionable `ImportError`
 
 ### Public API & sklearn composability
@@ -87,7 +87,7 @@ Each requirement maps to exactly one phase.
 | TEXT-03 | Phase 2 | Complete |
 | CORE-01 | Phase 2 | Complete |
 | CORE-02 | Phase 3 | Complete |
-| TEXT-02 | Phase 3 | Pending |
+| TEXT-02 | Phase 3 | Complete |
 | API-01 | Phase 3 | Complete |
 | API-02 | Phase 3 | Pending |
 | QA-02 | Phase 3 | Complete |
