@@ -24,14 +24,14 @@ One clean, sklearn-compatible library that computes novelty/structure signals fr
 - ✓ sklearn-style `fit` / `fit_transform` estimators (`BaseEstimator` / `TransformerMixin`, stateless transformers) — existing
 - ✓ Golden-output baseline (all six estimators) captured pre-refactor and wired into a permanent drift-detection pytest gate; dashboard/`cache_contract.py`/`shipping.py`/`build_dashboard_artifacts.py` and related artifact-serving code removed from the repo, preserved in git history — Validated in Phase 01: Baseline & Removal
 - ✓ Surviving code reorganized into a **modality-agnostic analysis core** + an **`infodynamics.text` on-ramp** subpackage (`segmentation.py`, `embedding.py`, `morphology.py` relocated via `git mv`, all call sites repointed, lazy heavy-dependency guards preserved byte-identically) — Validated in Phase 02: Reorganize Into Core + Text On-Ramp
+- ✓ Analysis primitives (`InfoDynamics`, `MultiscaleInfoDynamics`) operate on generic numeric `ndarray` input, independent of text — zero `infodynamics.text` imports or `segment()`/`Encoder.encode()` calls remain in `pipeline.py` — Validated in Phase 03: Decouple the Pipeline
+- ✓ Public estimators are **sklearn Pipeline-composable** — every public estimator (`TextSegmenter`, `Encoder`, `MorphologicalEncoder`, `InfoDynamics`, `MultiscaleInfoDynamics`, `WindowedRollingDistance`, `Scalogram`, `FooteNovelty`, …) passes a `get_params`/`set_params`/`clone()` round-trip, and the full text-on-ramp → analysis chain composes end-to-end inside a real `sklearn.pipeline.Pipeline` (`tests/test_pipeline_composition.py`) — Validated in Phase 03: Decouple the Pipeline
 
 ### Active
 
 <!-- This milestone: extract a clean, modality-agnostic core. -->
 
-- [ ] Analysis primitives operate on generic numeric time series / embeddings, independent of text
 - [ ] Design a clean, intentional **public API** (curated top-level exports) for the reorganized package
-- [ ] Public estimators are **sklearn Pipeline-composable** — chain text on-ramp → analysis, with working `get_params` / `set_params` and `fit` / `transform` / `fit_transform`
 - [ ] Test suite passes against the reorganized package (remove or adapt tests tied to deleted code)
 
 ### Out of Scope
@@ -88,4 +88,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-14 after Phase 02 (Reorganize Into Core + Text On-Ramp) completion*
+*Last updated: 2026-07-14 after Phase 03 (Decouple the Pipeline) completion*
