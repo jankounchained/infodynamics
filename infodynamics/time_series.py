@@ -1,7 +1,6 @@
 """
 Class for estimation of information dynamics of time-dependent probabilistic document representations.
 """
-import warnings
 from typing import Optional, Union, Callable, Tuple, Literal
 from typing_extensions import Self
 
@@ -9,7 +8,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from infodynamics.metrics import DISTANCES
+from infodynamics.scalogram import _resolve_measure
 
 
 class WindowedRollingDistance(BaseEstimator, TransformerMixin):
@@ -20,7 +19,7 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
         jump_size: int = 0,
         inplace_constant: Union[int, float] = 0,
         estimate_error: bool = False,
-        averaging_weigts: Optional[ArrayLike] = None,
+        averaging_weights: Optional[ArrayLike] = None,
     ):
         """
 
@@ -42,47 +41,30 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
         estimate_error: bool, default=False
             Return the standard deviation of the novelty, transience and resonance signals?
 
-        averaging_weigts : np.ndarray or None, default=None
+        averaging_weights : np.ndarray or None, default=None
             Weights for averaging novelty and transience.
             Can be used to give more weight to more recent observations.
             Must be of length window_size.
         """
+        self.measure = measure
         self.window_size = window_size
         self.jump_size = jump_size
         self.inplace_constant = inplace_constant
         self.estimate_error = estimate_error
-        self.averaging_weigts = averaging_weigts
-
-        if measure in DISTANCES:
-            self.measure = DISTANCES[measure]
-        elif callable(measure):
-            self.measure = measure
-        else:
-            raise AttributeError(f"Invalid value for parameter 'measure': {measure}")
+        self.averaging_weights = averaging_weights
 
     def _summarize_tmp(self, tmp: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """ """
-        if self.averaging_weigts is not None:
-            return np.average(tmp, weights=self.averaging_weigts, axis=0), np.std(tmp)
+        if self.averaging_weights is not None:
+            return np.average(tmp, weights=self.averaging_weights, axis=0), np.std(tmp)
         else:
             return np.mean(tmp), np.std(tmp)
 
     def _validate_data(self, X: ArrayLike) -> np.ndarray:
         """
-        UNFINISHED
-        Super basic data validation, converts lists of lists to np.ndarray.
+        Coerce array-like input (list-of-lists, np.ndarray, etc.) to np.ndarray.
         """
-        if isinstance(X, list):
-            if isinstance(X[0], list):
-                X = np.array(X)
-        elif isinstance(X, np.ndarray):
-            pass
-        else:
-            warnings.warn(
-                f"Input data type ({type(X)}) not recognized. Returning input data as is."
-            )
-
-        return X
+        return np.asarray(X)
 
     def calc_signal(
         self, X: np.ndarray, relative_to: Literal["past", "future"]
@@ -128,7 +110,7 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
 
             if submat.shape[0] == self.window_size:
                 # use broadcasting to calculate js_dist for all elements in submat
-                tmp = self.measure(x, submat)
+                tmp = self.measure_(x, submat)
             else:
                 tmp = np.full([self.window_size], self.inplace_constant)
 
@@ -168,6 +150,7 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
             Instance with estimated signal.
         """
         X = self._validate_data(X)
+        self.measure_ = _resolve_measure(self.measure)
 
         # novelty & transience
         N_hat, N_sd = self.calc_signal(X, relative_to="past")
