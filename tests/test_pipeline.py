@@ -1,8 +1,8 @@
 """ """
 import numpy as np
 
-import infodynamics.pipeline as pipeline_module
-from infodynamics import InfoDynamics, MultiscaleInfoDynamics
+import infodynamics.text.pipeline as text_pipeline_module
+from infodynamics.text import TextInfoDynamics, TextMultiscaleInfoDynamics
 
 TEXT = "Cats chase mice. Dogs chase cats. The sun is bright today. Rain falls on the roof."
 MULTISCALE_TEXT = (
@@ -23,10 +23,11 @@ class FakeEncoder:
 
 
 def test_fit_transform_returns_novelty_transience_resonance(monkeypatch):
-    monkeypatch.setattr(pipeline_module, "Encoder", FakeEncoder)
+    monkeypatch.setattr(text_pipeline_module, "Encoder", FakeEncoder)
 
-    model = InfoDynamics(model_name="fake-model", window_size=1)
-    signal = model.fit_transform(TEXT)
+    model = TextInfoDynamics(model_name="fake-model", window_size=1)
+    model.fit(TEXT)
+    signal = model.signal_
 
     assert set(signal.keys()) == {"novelty", "transience", "resonance"}
     for key, values in signal.items():
@@ -35,9 +36,9 @@ def test_fit_transform_returns_novelty_transience_resonance(monkeypatch):
 
 
 def test_fit_stores_chunks_and_embeddings(monkeypatch):
-    monkeypatch.setattr(pipeline_module, "Encoder", FakeEncoder)
+    monkeypatch.setattr(text_pipeline_module, "Encoder", FakeEncoder)
 
-    model = InfoDynamics(model_name="fake-model", window_size=1)
+    model = TextInfoDynamics(model_name="fake-model", window_size=1)
     model.fit(TEXT)
 
     assert len(model.chunks_) == len(model.embeddings_)
@@ -45,31 +46,33 @@ def test_fit_stores_chunks_and_embeddings(monkeypatch):
 
 
 def test_estimate_error_adds_sd_keys(monkeypatch):
-    monkeypatch.setattr(pipeline_module, "Encoder", FakeEncoder)
+    monkeypatch.setattr(text_pipeline_module, "Encoder", FakeEncoder)
 
-    model = InfoDynamics(model_name="fake-model", window_size=1, estimate_error=True)
-    signal = model.fit_transform(TEXT)
+    model = TextInfoDynamics(model_name="fake-model", window_size=1, estimate_error=True)
+    model.fit(TEXT)
+    signal = model.signal_
 
     assert {"novelty_sd", "transience_sd", "resonance_sd"} <= set(signal.keys())
 
 
 def test_chunk_size_reduces_signal_length(monkeypatch):
-    monkeypatch.setattr(pipeline_module, "Encoder", FakeEncoder)
+    monkeypatch.setattr(text_pipeline_module, "Encoder", FakeEncoder)
 
-    model_1 = InfoDynamics(model_name="fake-model", chunk_size=1, window_size=1)
-    model_2 = InfoDynamics(model_name="fake-model", chunk_size=2, window_size=1)
+    model_1 = TextInfoDynamics(model_name="fake-model", chunk_size=1, window_size=1)
+    model_2 = TextInfoDynamics(model_name="fake-model", chunk_size=2, window_size=1)
 
-    signal_1 = model_1.fit_transform(TEXT)
-    signal_2 = model_2.fit_transform(TEXT)
+    model_1.fit(TEXT)
+    model_2.fit(TEXT)
 
-    assert len(signal_2["novelty"]) < len(signal_1["novelty"])
+    assert len(model_2.signal_["novelty"]) < len(model_1.signal_["novelty"])
 
 
 def test_multiscale_fit_transform_returns_expected_keys(monkeypatch):
-    monkeypatch.setattr(pipeline_module, "Encoder", FakeEncoder)
+    monkeypatch.setattr(text_pipeline_module, "Encoder", FakeEncoder)
 
-    model = MultiscaleInfoDynamics(model_name="fake-model", scales=[1, 2, 3], radii=[1, 2, 3])
-    result = model.fit_transform(MULTISCALE_TEXT)
+    model = TextMultiscaleInfoDynamics(model_name="fake-model", scales=[1, 2, 3], radii=[1, 2, 3])
+    model.fit(MULTISCALE_TEXT)
+    result = model.result_
 
     n_chunks = len(model.chunks_)
     assert set(result.keys()) == {"ssm", "scalogram", "novelty", "descriptors"}
@@ -80,9 +83,9 @@ def test_multiscale_fit_transform_returns_expected_keys(monkeypatch):
 
 
 def test_multiscale_fit_stores_chunks_and_embeddings(monkeypatch):
-    monkeypatch.setattr(pipeline_module, "Encoder", FakeEncoder)
+    monkeypatch.setattr(text_pipeline_module, "Encoder", FakeEncoder)
 
-    model = MultiscaleInfoDynamics(model_name="fake-model", scales=[1, 2], radii=[1, 2])
+    model = TextMultiscaleInfoDynamics(model_name="fake-model", scales=[1, 2], radii=[1, 2])
     model.fit(MULTISCALE_TEXT)
 
     assert len(model.chunks_) == len(model.embeddings_)

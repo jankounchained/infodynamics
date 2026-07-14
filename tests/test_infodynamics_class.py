@@ -22,19 +22,19 @@ def test_calc_signal_data_shapes():
     )
 
     i0 = WindowedRollingDistance(measure=js_dist, window_size=0)
-    X0 = i0.fit_transform(X)
+    i0.fit(X)
 
     i1 = WindowedRollingDistance(measure=js_dist, window_size=1)
-    X1 = i1.fit_transform(X)
+    i1.fit(X)
 
     i2 = WindowedRollingDistance(measure=js_dist, window_size=2)
-    X2 = i2.fit_transform(X)
+    i2.fit(X)
 
     input_shape = X.shape[0]
     output_shapes = [
-        X0["N_hat"].shape[0],
-        X1["N_hat"].shape[0],
-        X2["N_hat"].shape[0],
+        i0.signal_["N_hat"].shape[0],
+        i1.signal_["N_hat"].shape[0],
+        i2.signal_["N_hat"].shape[0],
     ]
 
     assert np.allclose(input_shape, output_shapes)
@@ -44,7 +44,45 @@ def test_transience_calculation():
     """
     does it work with varying windows (incl. w=0)?
     """
-    pass
+    rng = np.random.default_rng(42)
+    X = rng.standard_normal(size=(30, 6))
+
+    for window_size in (0, 1, 2, 3):
+        i = WindowedRollingDistance(measure="cosine", window_size=window_size)
+        i.fit(X)
+
+        assert i.signal_["T_hat"].shape == (30,)
+        assert not np.isnan(i.signal_["T_hat"]).any()
+
+
+def test_negative_values_in_input_data():
+    """distances against arbitrary-magnitude real vectors (incl. negatives)
+    must stay finite, not NaN/Inf."""
+    rng = np.random.default_rng(7)
+    X = rng.standard_normal(size=(25, 6))
+
+    i = WindowedRollingDistance(measure="cosine", window_size=3)
+    i.fit(X)
+
+    for key in ("N_hat", "T_hat", "R_hat"):
+        signal = i.signal_[key]
+        assert signal.shape == (25,)
+        assert np.isfinite(signal).all()
+
+
+def test_very_small_numbers():
+    """numerical stability at the denormal edge: very small magnitudes
+    must not produce NaN/Inf output."""
+    rng = np.random.default_rng(7)
+    X = rng.standard_normal(size=(25, 6)) * 1e-300
+
+    i = WindowedRollingDistance(measure="cosine", window_size=3)
+    i.fit(X)
+
+    for key in ("N_hat", "T_hat", "R_hat"):
+        signal = i.signal_[key]
+        assert signal.shape == (25,)
+        assert np.isfinite(signal).all()
 
 
 def test_validate_input_list_of_lists():
@@ -101,5 +139,8 @@ def test_window_size(data, window_size):
     iw = WindowedRollingDistance(measure=js_dist, window_size=window_size)
     Xw = iw.fit_transform(X)
 
-    # Add your assertions here, e.g., check the shape of Xw
-    assert Xw["N_hat"].shape == (len(X) - window_size + 1, window_size)
+    # Actual output shape: fit_transform returns the stacked
+    # (n_samples, 3) novelty/transience/resonance array; N_hat is
+    # always shape (n_samples,) regardless of window_size.
+    assert Xw.shape == (len(X), 3)
+    assert iw.signal_["N_hat"].shape == (len(X),)

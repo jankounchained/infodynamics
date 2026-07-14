@@ -27,6 +27,7 @@ extras_require = {
     'viz-projection': ['umap-learn>=0.5'],
     'test': ['pytest>=6.2.2', 'hypothesis>=6.87.0'],
 }
+extras_require['test'] = sorted(set(extras_require['test']) | set(extras_require['embedding']) | set(extras_require['clustering']))
 extras_require['all'] = sorted({dep for deps in extras_require.values() for dep in deps})
 
 setup(
@@ -47,12 +48,4 @@ setup(
         'typing-extensions>=4.8.0',
     ],
     extras_require=extras_require,
-    entry_points={
-        'console_scripts': [
-            'infodynamics-pack=infodynamics.shipping:pack_main',
-            'infodynamics-pull=infodynamics.shipping:pull_main',
-            'infodynamics-verify=infodynamics.shipping:verify_main',
-            'infodynamics-init-project=infodynamics.shipping:init_project_main',
-        ],
-    },
 )
