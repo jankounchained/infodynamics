@@ -145,7 +145,16 @@ Plans:
   4. The full `pytest` suite passes; the collected test count is reconciled against the pre-refactor baseline, with only the known-removed `test_manifest.py` accounting for any drop
   5. The Phase 1 golden-output snapshot still matches for all preserved numerical behavior; every public estimator passes a final `get_params`/`set_params`/`clone` spot-check
 
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+**Wave 1**
+
+- [ ] 05-01-PLAN.md — Fix the one in-scope bug (guard `MorphologicalEncoder.encode()`'s unguarded `textdescriptives` import → actionable `ImportError`) + regression test; own `fix(05):` commit (D-01/D-03)
+- [ ] 05-03-PLAN.md — Bonus, non-gating CI workflow `.github/workflows/ci.yml` (single job: `pip install .[test]` + `pytest`, pinned Actions) (D-07)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 05-02-PLAN.md — Run all 5 ROADMAP criteria checks (scoped grep sweep, fresh no-extras venv, full pytest + 81→68→91 reconciliation, golden + clone spot-check) and author `05-VERIFICATION.md` evidence transcript (D-05, CORE-03, QA-04)
 
 ## Progress
 
@@ -158,4 +167,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Reorganize Into Core + Text On-Ramp | 2/2 | Complete    | 2026-07-14 |
 | 3. Decouple the Pipeline | 7/7 | Complete    | 2026-07-14 |
 | 4. Curate the Public API | 2/2 | Complete    | 2026-07-14 |
-| 5. Verify | 0/TBD | Not started | - |
+| 5. Verify | 0/3 | Not started | - |
