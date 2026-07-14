@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 03
 current_phase_name: decouple-the-pipeline
 status: executing
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-07-14T12:36:22.961Z"
+stopped_at: Completed 03-06-PLAN.md
+last_updated: "2026-07-14T12:43:28.474Z"
 last_activity: 2026-07-14
 last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 12
   percent: 40
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 03 (decouple-the-pipeline) — EXECUTING
-Plan: 6 of 7
+Plan: 7 of 7
 Status: Ready to execute
 Last activity: 2026-07-14 — Phase 03 execution started
 
@@ -67,6 +67,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03 P03 | 6min | 2 tasks | 1 files |
 | Phase 03 P04 | 6min | 2 tasks | 2 files |
 | Phase 03 P05 | 8min | 2 tasks | 2 files |
+| Phase 03 P06 | 6min | 2 tasks tasks | 3 files files |
 
 ## Accumulated Context
 
@@ -94,6 +95,8 @@ Recent decisions affecting current work:
 - [Phase 03-04]: Fixed WindowedRollingDistance window_size=0 crash/NaN bug (Rule 1) surfaced while implementing test_transience_calculation's required w=0 no-NaN assertion
 - [Phase ?]: [Phase 03-05] Kept Task 1 (TextInfoDynamics) and Task 2 (TextMultiscaleInfoDynamics + __init__.py re-exports) as two separate atomic commits per the plan's task breakdown, even though both land in infodynamics/text/pipeline.py
 - [Phase ?]: [Phase 03-05] Task 1's verify block references importing TextInfoDynamics from infodynamics.text, valid only after Task 2's __init__.py re-export lands - verified functionally via direct submodule import first, then re-ran the plan's literal verify command after Task 2 completed
+- [Phase ?]: [Phase 03-06] No numeric-behavior changes were needed to migrate tests to the Text* wrappers -- purely call-site/API-shape migration, empirically confirming CORE-02/QA-02's decoupling and bug fixes stayed non-numerical
+- [Phase ?]: [Phase 03-06] Golden baseline re-verified: tests/test_golden_baseline.py passes 4/4 against the EXISTING, unmodified baseline_arrays.npz/baseline_meta.json -- zero numerical drift proven across Phase 3's Plans 01/02/03/05
 
 ### Pending Todos
 
@@ -114,6 +117,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-14T12:35:41.421Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-07-14T12:43:28.467Z
+Stopped at: Completed 03-06-PLAN.md
 Resume file: None

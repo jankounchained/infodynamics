@@ -87,7 +87,7 @@ Plans:
   4. `sklearn.pipeline.Pipeline([("segment", TextSegmenter()), ("encode", Encoder()), ("analyze", MultiscaleInfoDynamics())]).fit_transform(text)` runs end-to-end, asserted in `tests/test_pipeline_composition.py`
   5. Known bugs are fixed as their own labeled commits (`averaging_weigts`→`averaging_weights` rename; `_MODEL_CACHE` keyed by `device` with no in-place mutation; `_validate_data` completed), and test debt is resolved (`test_transience_calculation`, `test_negative_values_in_input_data`, `test_very_small_numbers` implemented; `test_window_size` assertion corrected) — each bug-fix commit updates the golden-output snapshot deliberately, separate from any pure-move commit
 
-**Plans**: 5/7 plans executed
+**Plans**: 6/7 plans executed
 Plans:
 **Wave 1**
 
@@ -105,7 +105,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3)*
 
-- [ ] 03-06-PLAN.md — Migrate `test_pipeline.py`/`test_morphology.py` to the wrappers; update golden `capture_baseline.py` and re-verify zero numerical drift (criterion 5)
+- [x] 03-06-PLAN.md — Migrate `test_pipeline.py`/`test_morphology.py` to the wrappers; update golden `capture_baseline.py` and re-verify zero numerical drift (criterion 5)
 - [ ] 03-07-PLAN.md — New `tests/test_pipeline_composition.py`: clone/get_params/set_params round-trip for every public estimator (API-01) + end-to-end Pipeline composition (API-02, criterion 4)
 
 **Research flag** *(resolved)*: The three open questions were resolved during `/gsd-discuss-phase` and locked as decisions in `03-CONTEXT.md`: (a) transform() semantics → **D-02** (every estimator gets a real standalone `transform(X)` recomputing fresh; `MultiscaleInfoDynamics` is legitimately Pipeline-terminal); (b) dict-vs-array output → **D-03** (array-valued `transform()`/`fit_transform()` with the rich dict preserved on `signal_`/`result_`); (c) convenience wrapper → **D-04** (add `TextInfoDynamics`/`TextMultiscaleInfoDynamics` under `infodynamics.text`). Plus **D-01** (TextSegmenter returns `List[str]`, spans preserved on `chunks_`).
@@ -148,6 +148,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Baseline & Removal | 4/4 | Complete    | 2026-07-14 |
 | 2. Reorganize Into Core + Text On-Ramp | 2/2 | Complete    | 2026-07-14 |
-| 3. Decouple the Pipeline | 5/7 | In Progress|  |
+| 3. Decouple the Pipeline | 6/7 | In Progress|  |
 | 4. Curate the Public API | 0/TBD | Not started | - |
 | 5. Verify | 0/TBD | Not started | - |
