@@ -7,7 +7,7 @@ pytest.importorskip("textdescriptives")
 
 from spacy.tokens import Doc  # noqa: E402
 
-from infodynamics import MorphologicalEncoder  # noqa: E402
+from infodynamics.text import MorphologicalEncoder  # noqa: E402
 from infodynamics.text.morphology import encode_all_feature_groups  # noqa: E402
 from infodynamics.text import TextMultiscaleInfoDynamics  # noqa: E402
 
