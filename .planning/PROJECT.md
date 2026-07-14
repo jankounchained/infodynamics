@@ -26,12 +26,12 @@ One clean, sklearn-compatible library that computes novelty/structure signals fr
 - ✓ Surviving code reorganized into a **modality-agnostic analysis core** + an **`infodynamics.text` on-ramp** subpackage (`segmentation.py`, `embedding.py`, `morphology.py` relocated via `git mv`, all call sites repointed, lazy heavy-dependency guards preserved byte-identically) — Validated in Phase 02: Reorganize Into Core + Text On-Ramp
 - ✓ Analysis primitives (`InfoDynamics`, `MultiscaleInfoDynamics`) operate on generic numeric `ndarray` input, independent of text — zero `infodynamics.text` imports or `segment()`/`Encoder.encode()` calls remain in `pipeline.py` — Validated in Phase 03: Decouple the Pipeline
 - ✓ Public estimators are **sklearn Pipeline-composable** — every public estimator (`TextSegmenter`, `Encoder`, `MorphologicalEncoder`, `InfoDynamics`, `MultiscaleInfoDynamics`, `WindowedRollingDistance`, `Scalogram`, `FooteNovelty`, …) passes a `get_params`/`set_params`/`clone()` round-trip, and the full text-on-ramp → analysis chain composes end-to-end inside a real `sklearn.pipeline.Pipeline` (`tests/test_pipeline_composition.py`) — Validated in Phase 03: Decouple the Pipeline
+- ✓ Clean, intentional **public API** — `infodynamics.__all__` (8 core symbols, zero `.text` imports) and `infodynamics.text.__all__` (8 text symbols) are explicit and locked by `tests/test_public_api.py`; a canonical `examples/basic_usage.py` demonstrates both the core-only `ndarray` path and full `Pipeline` composition; `CHANGELOG.md` maps every moved symbol's old→new import path — Validated in Phase 04: Curate the Public API
 
 ### Active
 
 <!-- This milestone: extract a clean, modality-agnostic core. -->
 
-- [ ] Design a clean, intentional **public API** (curated top-level exports) for the reorganized package
 - [ ] Test suite passes against the reorganized package (remove or adapt tests tied to deleted code)
 
 ### Out of Scope
@@ -66,7 +66,7 @@ One clean, sklearn-compatible library that computes novelty/structure signals fr
 | Two separate repos (not a monorepo/workspace) | Cleanest boundary between library and EDA tool | — Pending |
 | cache/shipping/artifact-serving code leaves with the dashboard | It's case-study infra, not general novelty detection | — Pending |
 | Modality-agnostic core + `infodynamics.text` on-ramp | Headline product is novelty from complex time series; text is first-class but separable | ✓ Done — Phase 02 |
-| Full namespace reorg, breaking imports accepted | Pre-1.0 — a clean, intentional public API is worth the churn | — Pending |
+| Full namespace reorg, breaking imports accepted | Pre-1.0 — a clean, intentional public API is worth the churn | ✓ Done — Phase 04 |
 | Finish line = decoupled + reorganized, tests green (no PyPI/packaging) | Packaging & publishing is a separate later milestone | — Pending |
 | sklearn Pipeline-composable, not full `check_estimator` | Practical composability is the goal; edge-case conformance isn't worth it now | — Pending |
 
@@ -88,4 +88,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-14 after Phase 03 (Decouple the Pipeline) completion*
+*Last updated: 2026-07-14 after Phase 04 (Curate the Public API) completion*
