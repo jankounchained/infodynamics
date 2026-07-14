@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: complete
 phase: 05-verify
-source: [05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md]
+source: [05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md, 05-04-SUMMARY.md]
 started: 2026-07-14T18:28:59Z
-updated: 2026-07-14T18:45:00Z
+updated: 2026-07-14T19:05:00Z
 ---
 
 ## Current Test
@@ -25,16 +25,13 @@ source: automated
 coverage_id: D1
 
 ### 3. [05-02/D2] Full pytest suite + golden-baseline reconciliation
-expected: Full pytest suite passes (92 tests) with collected count reconciled 81 -> 68 -> 92 against pre-refactor baseline; golden-baseline and pipeline-composition (clone/get_params/set_params) tests green at existing tolerance
-result: issue
-reported: "CI fails. Two tests give a numerical error compared to golden baseline. test_text_signals_match_golden_baseline and test_multiscale_structure_matches_golden_baseline"
-severity: blocker
+expected: Full pytest suite passes (93 tests, incl. new tolerance-policy guard) with golden-baseline tests green on CI (ubuntu-latest), not just locally (macOS); pipeline-composition (clone/get_params/set_params) tests green
+result: pass
 coverage_id: D2
-evidence: |
-  gh run 29356333314 (GitHub Actions, ubuntu-latest, Python 3.14.6): 2 failed, 82 passed, 1 skipped.
-  FAILED tests/test_golden_baseline.py::test_text_signals_match_golden_baseline - AssertionError: a_resonance has drifted from the golden baseline
-  FAILED tests/test_golden_baseline.py::test_multiscale_structure_matches_golden_baseline - AssertionError: multiscale_a_ssm has drifted from the golden baseline
-  Diffs are ~1e-7 magnitude (e.g. 0.64189547 vs 0.64189553), well below rtol=1e-5 for most elements individually but np.allclose fails on the full array — 05-01/05-02 SUMMARY.md and 05-VERIFICATION.md both claimed this suite green, evidence was captured locally (macOS) not on CI (ubuntu-latest).
+resolution: |
+  Root-caused as float32 cross-platform BLAS precision noise (.planning/debug/golden-baseline-ci-drift.md), NOT a refactor regression. Fixed by 05-04-PLAN.md: split tests/test_golden_baseline.py's tolerance into a tight float64 band (_NUMERIC_ATOL=1e-8, unchanged) for encoder-independent numeric/cluster tests, and a float32-aware band (_TRANSFORMER_ATOL=1e-6) for the two transformer-derived tests, plus a guard test and documenting docstring. Test-only change, zero production code touched.
+  Confirmed fixed on CI: gh run 29360296063 (GitHub Actions, ubuntu-latest, feature/artifacts) — status: success. PR #9 checks: test/pass (2m25s).
+  Local: .venv/bin/python -m pytest -q -> 93 passed.
 
 ### 4. [05-02/D3] Repo-wide grep sweep for removed symbols
 expected: Scoped repo-wide grep sweep for dashboard/cache_contract/shipping/bench_core across surviving package code + user docs returns zero hits
@@ -51,29 +48,20 @@ coverage_id: D1
 ## Summary
 
 total: 5
-passed: 4
-issues: 1
+passed: 5
+issues: 0
 pending: 0
 skipped: 0
 
 ## Gaps
 
 - truth: "Golden-baseline tests (test_text_signals_match_golden_baseline, test_multiscale_structure_matches_golden_baseline) pass at rtol=1e-5, atol=1e-8 against the captured pre-refactor baseline"
-  status: failed
+  status: resolved
   reason: "User reported: CI fails. Two tests give a numerical error compared to golden baseline. test_text_signals_match_golden_baseline and test_multiscale_structure_matches_golden_baseline"
   severity: blocker
   test: 3
   root_cause: "atol=1e-8 is float64-grade precision applied to float32-precision data. Encoder.encode() returns sentence-transformers/PyTorch's default float32 embeddings (never explicitly chosen); everything downstream (cosine-similarity SSMs, resonance/novelty/transience signals) inherits that dtype. The golden baseline was captured only on macOS (Apple Accelerate/vecLib BLAS); CI runs on ubuntu-latest (OpenBLAS/manylinux BLAS). Same code, same math, different platform BLAS backend -> non-associative float32 summation order -> ~1 ULP (1.19e-7) difference, exceeding atol=1e-8 on a handful of elements. Confirmed NOT a v0.5 refactor regression: recomputing on the same macOS machine that holds the baseline reproduces it with 0/27 array mismatches, even with materially newer numpy/scikit-learn/torch/sentence-transformers versions. This is the first time the suite has ever run on Linux/CI (05-03 added CI in this same phase) — the cross-platform gap was structurally guaranteed to surface, independent of code correctness."
-  artifacts:
-    - path: "tests/test_golden_baseline.py"
-      issue: "rtol=1e-5, atol=1e-8 tolerance is too tight for float32-precision, cross-platform (macOS vs Linux BLAS) data"
-    - path: "infodynamics/text/embedding.py"
-      issue: "Encoder.encode() inherits float32 dtype from sentence-transformers/PyTorch convert_to_numpy=True — never an explicit, documented choice"
-    - path: "infodynamics/scalogram.py"
-      issue: "self_similarity_matrix() preserves float32 through the SSM computation, propagating the precision limit"
-    - path: "tests/golden/capture_baseline.py"
-      issue: "Baseline was captured on macOS only, never validated against a second platform before CI (05-03) was added"
-  missing:
-    - "Loosen/adjust the golden-baseline tolerance to reflect float32 reality (e.g. raise atol to ~1e-6, or drop the fixed atol in favor of rtol-only comparison for float32-derived arrays)"
-    - "Document that byte-exact cross-platform reproducibility of float32 transformer-derived signals is not achievable; scope QA-01 'no numerical drift' as same-platform determinism plus a looser cross-platform tolerance band"
+  fix_plan: .planning/phases/05-verify/05-04-PLAN.md
+  fix_summary: .planning/phases/05-verify/05-04-SUMMARY.md
+  verified_on_ci: "gh run 29360296063 (feature/artifacts, ubuntu-latest) — status: success"
   debug_session: .planning/debug/golden-baseline-ci-drift.md
