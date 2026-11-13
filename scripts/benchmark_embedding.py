@@ -13,11 +13,14 @@ By default the text set is drawn from a small built-in sentence pool
 (sampled/repeated to reach --n-texts), so the script runs standalone. Pass
 --csv to benchmark on your own corpus instead.
 
+Requires the 'embedding' extra and pandas:
+    pip install ".[embedding]" pandas
+
 Usage
 -----
-    python benchmark_embedding.py --models BAAI/bge-m3 sentence-transformers/all-MiniLM-L6-v2
-    python benchmark_embedding.py --models BAAI/bge-m3 --n-texts 500 --device mps
-    python benchmark_embedding.py --models BAAI/bge-m3 --csv corpus.csv --out results.csv
+    python scripts/benchmark_embedding.py --models BAAI/bge-m3 sentence-transformers/all-MiniLM-L6-v2
+    python scripts/benchmark_embedding.py --models BAAI/bge-m3 --n-texts 500 --device mps
+    python scripts/benchmark_embedding.py --models BAAI/bge-m3 --csv corpus.csv --out results.csv
 """
 import argparse
 import random
