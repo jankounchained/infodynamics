@@ -1,18 +1,22 @@
 """
-test
-- negative values in input data
-- window size > input data length
-- non-probability distribution passed into novelty !!!
-- edge case, very small numbers: https://github.com/scipy/scipy/issues/19436
-- output signal same length as input data
+Tests for the distance and divergence measures in infodynamics.metrics:
+known values, symmetry, vectorised (2-D) input and measure lookup.
 """
 
 import pytest
 import numpy as np
 from numpy.linalg import norm
 
-from infodynamics.metrics import _rel_entr, kl_div, js_div, js_dist, cos_sim, cos_dist, DISTANCES
-from infodynamics import WindowedRollingDistance
+from infodynamics.metrics import (
+    DISTANCES,
+    _rel_entr,
+    _resolve_measure,
+    cos_dist,
+    cos_sim,
+    js_dist,
+    js_div,
+    kl_div,
+)
 
 
 def test_rel_entr():
@@ -113,6 +117,11 @@ def test_negative_values_in_input_data():
 
 def test_very_small_numbers():
     pass
+
+
+def test_unknown_measure_name_raises_value_error():
+    with pytest.raises(ValueError, match="Invalid value for parameter 'measure'"):
+        _resolve_measure("not-a-measure")
 
 
 def test_cossim_single_comparison():

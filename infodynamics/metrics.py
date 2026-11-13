@@ -1,8 +1,10 @@
 """
+Distance and divergence measures between observations, and the
+``DISTANCES`` registry that estimators resolve a ``measure`` string against.
 """
-from typing import Union
+from typing import Callable, Union
+
 import numpy as np
-from numpy.typing import ArrayLike
 from sklearn.metrics.pairwise import cosine_similarity
 
 
@@ -10,7 +12,7 @@ def _rel_entr(p: np.ndarray, q: np.ndarray) -> np.ndarray:
     """
     Vectorized, element-wise relative entropy.
     """
-    # add smalles possible float to avoid RunTime warnings
+    # add smallest possible float to avoid RunTime warnings
     # about zero division
     p = np.asarray(p) + np.finfo(float).eps
     q = np.asarray(q) + np.finfo(float).eps
@@ -20,16 +22,22 @@ def _rel_entr(p: np.ndarray, q: np.ndarray) -> np.ndarray:
     return result
 
 
-def kl_div(p: np.ndarray, q: np.ndarray) -> float:
+def kl_div(p: np.ndarray, q: np.ndarray) -> Union[float, np.ndarray]:
     """
-    Kullback-Leibler Divergence between two discrete distributions.
+    Kullback-Leibler divergence between two discrete distributions.
+
+    Returns a float for 1-D inputs, or one value per row when either
+    input is 2-D.
     """
     return _rel_entr(p, q).sum(axis=-1)
 
 
-def js_div(p: np.ndarray, q: np.ndarray) -> float:
+def js_div(p: np.ndarray, q: np.ndarray) -> Union[float, np.ndarray]:
     """
     Jensen-Shannon divergence between two discrete distributions.
+
+    Inputs are normalised to sum to one. Returns a float for 1-D inputs,
+    or one value per row when either input is 2-D.
     """
     p = p / np.sum(p, axis=-1, keepdims=True)
     q = q / np.sum(q, axis=-1, keepdims=True)
@@ -37,9 +45,10 @@ def js_div(p: np.ndarray, q: np.ndarray) -> float:
     return 0.5 * kl_div(p, m) + 0.5 * kl_div(q, m)
 
 
-def js_dist(p: np.ndarray, q: np.ndarray) -> float:
+def js_dist(p: np.ndarray, q: np.ndarray) -> Union[float, np.ndarray]:
     """
-    Jesen-Shannon *distance* between two discrete distributions.
+    Jensen-Shannon *distance* (square root of the divergence) between two
+    discrete distributions.
     """
     return np.sqrt(js_div(p, q))
 
@@ -66,3 +75,16 @@ DISTANCES = {
     "cosine": cos_dist,
     "cosine_similarity": cos_sim,
 }
+
+
+def _resolve_measure(measure: Union[str, Callable]) -> Callable:
+    """Look up a measure by name in ``DISTANCES``, or pass a callable through."""
+    if isinstance(measure, str) and measure in DISTANCES:
+        return DISTANCES[measure]
+    elif callable(measure):
+        return measure
+    else:
+        raise ValueError(
+            f"Invalid value for parameter 'measure': {measure!r}. "
+            f"Use one of {sorted(DISTANCES)} or a callable."
+        )

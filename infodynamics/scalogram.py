@@ -14,16 +14,7 @@ from numpy.typing import ArrayLike
 from sklearn.base import BaseEstimator, TransformerMixin
 from typing_extensions import Self
 
-from infodynamics.metrics import DISTANCES, cos_sim
-
-
-def _resolve_measure(measure: Union[str, Callable]) -> Callable:
-    if measure in DISTANCES:
-        return DISTANCES[measure]
-    elif callable(measure):
-        return measure
-    else:
-        raise AttributeError(f"Invalid value for parameter 'measure': {measure}")
+from infodynamics.metrics import _resolve_measure, cos_sim
 
 
 def rolling_gap_distance(
