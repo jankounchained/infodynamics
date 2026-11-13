@@ -14,10 +14,10 @@ def test_calc_signal_data_shapes():
     X = np.vstack(
         [
             np.random.uniform(0, 1, size=100),
-            np.random.normal(0, 1, size=100),
-            np.random.normal(0, 1, size=100),
-            np.random.normal(0, 1, size=100),
-            np.random.normal(0, 1, size=100),
+            np.random.uniform(0, 1, size=100),
+            np.random.uniform(0, 1, size=100),
+            np.random.uniform(0, 1, size=100),
+            np.random.uniform(0, 1, size=100),
         ]
     )
 
@@ -128,8 +128,8 @@ def test_window_size(data, window_size):
     X = data.draw(
         st.lists(
             st.floats(
-                min_value=0, max_value=1
-            ),  # Generate a random array of input data
+                min_value=0.01, max_value=1
+            ),  # positive values: js_dist compares distributions
             min_size=100,
             max_size=100,
         )

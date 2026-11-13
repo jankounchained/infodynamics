@@ -1,6 +1,8 @@
 """
 Tests for the distance and divergence measures in infodynamics.metrics:
-known values, symmetry, vectorised (2-D) input and measure lookup.
+known values, symmetry, vectorised (2-D) input, invalid input (negative
+entries, zero-sum distributions) and denormal-scale numbers
+(see https://github.com/scipy/scipy/issues/19436).
 """
 
 import pytest
@@ -111,12 +113,35 @@ def test_relative_entropy_multiple_comparisons():
     assert np.allclose(res_js_dist, np.array([0.27037753, 0.43722415]))
 
 
-def test_negative_values_in_input_data():
-    pass
+@pytest.mark.parametrize("measure", [kl_div, js_div, js_dist])
+def test_negative_values_in_input_data(measure):
+    """KL/JS compare probability distributions: negative entries are
+    rejected instead of silently producing NaN or dropping terms."""
+    p = np.array([0.5, -0.2, 0.7])
+    q = np.array([0.2, 0.1, 0.7])
+
+    with pytest.raises(ValueError, match="non-negative"):
+        measure(p, q)
+    with pytest.raises(ValueError, match="non-negative"):
+        measure(q, p)
+
+
+def test_zero_sum_distribution_is_rejected():
+    p = np.zeros(3)
+    q = np.array([0.2, 0.1, 0.7])
+
+    with pytest.raises(ValueError, match="sums to zero"):
+        js_div(p, q)
 
 
 def test_very_small_numbers():
-    pass
+    """Distributions with denormal-scale entries stay finite."""
+    p = np.array([1e-300, 1.0, 1e-300])
+    q = np.array([1.0, 1e-300, 1e-300])
+
+    for measure in (kl_div, js_div, js_dist):
+        assert np.isfinite(measure(p, q))
+    assert js_dist(p, q) <= 1.0
 
 
 def test_unknown_measure_name_raises_value_error():
