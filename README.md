@@ -112,7 +112,8 @@ its memory grows with the square of the number of steps.
 
 The library began as research code (2022–2024). In July 2026 it was
 refactored into this package using a spec-driven, AI-assisted workflow.
-The plans, research notes and verification reports from that work are in
+The plans, research notes and verification reports from that work are
+kept at the commit that completed it, in
 [`.planning/`](https://github.com/jankounchained/infodynamics/tree/619e659/.planning).
 
 - **No numerical output was allowed to change.** Before the refactor

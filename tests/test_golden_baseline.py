@@ -30,7 +30,8 @@ Do NOT re-tighten `_TRANSFORMER_ATOL` back to a float64 grade — it is guarded
 by `test_golden_baseline_tolerance_policy()`, which pins
 `_TRANSFORMER_ATOL > _NUMERIC_ATOL` and `_TRANSFORMER_ATOL >= 1.6e-7`.
 
-Full investigation: .planning/debug/golden-baseline-ci-drift.md
+Full investigation (kept at the v0.5 commit):
+https://github.com/jankounchained/infodynamics/blob/619e659/.planning/debug/golden-baseline-ci-drift.md
 """
 import functools
 import json
@@ -74,7 +75,7 @@ _NUMERIC_ATOL = 1e-8
 # returns float32 embeddings, and the SSMs, scalograms, resonance/novelty/
 # transience signals, and SSM-derived descriptors all inherit float32.
 # atol=1e-6 is ~6x the empirically observed cross-platform float32 noise
-# floor (1.6e-7, see .planning/debug/golden-baseline-ci-drift.md) and ~8x
+# floor (1.6e-7, see the investigation linked in the module docstring) and ~8x
 # float32 machine epsilon, while still 4+ orders of magnitude tighter than
 # any plausible algorithm regression.
 _TRANSFORMER_RTOL = 1e-5
