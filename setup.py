@@ -35,11 +35,29 @@ setup(
     version=_read_version(),
     packages=find_packages(),
     url='https://github.com/jankounchained/infodynamics/',
-    license='CC-BY',
-    author='Jan K',
-    description='Ahoj',
+    project_urls={
+        'Source': 'https://github.com/jankounchained/infodynamics',
+        'Issues': 'https://github.com/jankounchained/infodynamics/issues',
+    },
+    license='MIT',
+    author='Jan Kostkan',
+    description=(
+        'Novelty, transience and resonance signals for numeric time series, '
+        'with an optional text on-ramp.'
+    ),
     long_description=long_description,
     long_description_content_type="text/markdown",
+    python_requires='>=3.14',
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.14',
+        'Topic :: Scientific/Engineering :: Information Analysis',
+        'Topic :: Text Processing :: Linguistic',
+    ],
     install_requires=[
         'numpy>=1.19.0',
         'matplotlib>=3.3.2',

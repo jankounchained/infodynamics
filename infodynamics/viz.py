@@ -107,8 +107,8 @@ def plot_cluster_archetypes(clusterer, series: Sequence[np.ndarray], **kwargs) -
         axes = [axes]
 
     for ax, label in zip(axes, unique_labels):
-        for s, l in zip(series, labels):
-            if l == label:
+        for s, s_label in zip(series, labels):
+            if s_label == label:
                 ax.plot(np.linspace(0, 1, len(s)), s, alpha=0.2, color="gray")
 
         barycenter = clusterer.barycenters_[label]

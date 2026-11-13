@@ -17,6 +17,10 @@ class InfoDynamics(BaseEstimator, TransformerMixin):
     """
     Estimates the rate of flow of information (novelty, transience,
     resonance) between the rows of a numeric embeddings time series.
+
+    Cost: each row is compared with ``2 * window_size`` neighbours, so time
+    grows linearly with the number of rows and memory holds only the input
+    and three output signals.
     """
 
     def __init__(
@@ -159,6 +163,9 @@ class MultiscaleInfoDynamics(BaseEstimator, TransformerMixin):
 
     Complements InfoDynamics, which estimates novelty/transience/resonance
     at a single scale.
+
+    Cost: the self-similarity matrix is a dense ``(n_rows, n_rows)`` array,
+    so memory and time grow with the square of the number of rows.
     """
 
     def __init__(

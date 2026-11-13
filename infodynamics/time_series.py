@@ -1,5 +1,6 @@
 """
-Class for estimation of information dynamics of time-dependent probabilistic document representations.
+Single-scale information dynamics of a numeric time series: novelty,
+transience and resonance computed with a sliding window.
 """
 from typing import Optional, Union, Callable, Tuple, Literal
 from typing_extensions import Self
@@ -8,24 +9,21 @@ import numpy as np
 from numpy.typing import ArrayLike
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from infodynamics.scalogram import _resolve_measure
+from infodynamics.metrics import _resolve_measure
 
 
 class WindowedRollingDistance(BaseEstimator, TransformerMixin):
-    def __init__(
-        self,
-        measure: Union[str, Callable],
-        window_size: int,
-        jump_size: int = 0,
-        inplace_constant: Union[int, float] = 0,
-        estimate_error: bool = False,
-        averaging_weights: Optional[ArrayLike] = None,
-    ):
-        """
+    """Novelty, transience and resonance of each observation in a time series.
 
-        Parameters
-        -----------
-        measure : str or Callable
+    For observation ``i``, novelty is its mean distance to the
+    ``window_size`` observations before it, transience is its mean distance
+    to the ``window_size`` observations after it, and resonance is novelty
+    minus transience. Positions without a full window on the relevant side
+    get ``inplace_constant``.
+
+    Parameters
+    ----------
+    measure : str or Callable
             distance / similarity metric to use for comparison of observations.
             Either a function, or a string
 
@@ -45,7 +43,17 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
             Weights for averaging novelty and transience.
             Can be used to give more weight to more recent observations.
             Must be of length window_size.
-        """
+    """
+
+    def __init__(
+        self,
+        measure: Union[str, Callable],
+        window_size: int,
+        jump_size: int = 0,
+        inplace_constant: Union[int, float] = 0,
+        estimate_error: bool = False,
+        averaging_weights: Optional[ArrayLike] = None,
+    ):
         self.measure = measure
         self.window_size = window_size
         self.jump_size = jump_size
@@ -54,13 +62,14 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
         self.averaging_weights = averaging_weights
 
     def _summarize_tmp(self, tmp: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        """ """
+        """Mean (weighted if ``averaging_weights`` is set) and standard
+        deviation of the distances between one observation and its window."""
         if self.averaging_weights is not None:
             return np.average(tmp, weights=self.averaging_weights, axis=0), np.std(tmp)
         else:
             return np.mean(tmp), np.std(tmp)
 
-    def _validate_data(self, X: ArrayLike) -> np.ndarray:
+    def _as_array(self, X: ArrayLike) -> np.ndarray:
         """
         Coerce array-like input (list-of-lists, np.ndarray, etc.) to np.ndarray.
         """
@@ -130,16 +139,14 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
     def _calc_resonance(
         self, N_hat: np.ndarray, T_hat: np.ndarray, N_sd: np.ndarray, T_sd: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """ """
+        """Resonance (novelty minus transience) and its spread.
+
+        ``R_sd`` is currently the mean of ``N_sd`` and ``T_sd``. It is meant
+        to be the standard deviation of resonance, which this only
+        approximates; the definition is under review.
+        """
         R_hat = N_hat - T_hat
         R_sd = (N_sd + T_sd) / 2
-
-        # invalidate the signal outside of window bounds
-        # R_hat[: self.window_size] = np.zeros([self.window_size], dtype=float) + self.inplace_constant
-        # R_hat[-self.window_size :] = np.zeros([self.window_size], dtype=float) + self.inplace_constant
-        # R_sd[: self.window_size] = np.zeros([self.window_size], dtype=float) + self.inplace_constant
-        # R_sd[-self.window_size :] = np.zeros([self.window_size], dtype=float) + self.inplace_constant
-
         return R_hat, R_sd
 
     def fit(self, X: ArrayLike, y=None) -> Self:
@@ -158,14 +165,13 @@ class WindowedRollingDistance(BaseEstimator, TransformerMixin):
         self : object
             Instance with estimated signal.
         """
-        X = self._validate_data(X)
+        X = self._as_array(X)
         self.measure_ = _resolve_measure(self.measure)
 
         # novelty & transience
         N_hat, N_sd = self.calc_signal(X, relative_to="past")
         T_hat, T_sd = self.calc_signal(X, relative_to="future")
         # resonance
-        # TODO consider turning this off for jump calculations
         R_hat, R_sd = self._calc_resonance(N_hat, T_hat, N_sd, T_sd)
 
         # base output

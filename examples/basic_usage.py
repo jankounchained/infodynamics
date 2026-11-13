@@ -15,13 +15,14 @@ Demonstrates the two supported entry points into the library:
    driving the whole thing with a single fit_transform(text) call. This
    path requires the 'embedding' extra (sentence-transformers):
 
-       pip install infodynamics[embedding]
+       pip install ".[embedding]"
 
-   It is present in this project's development venv (.venv), so this
-   script runs both demos end-to-end out of the box.
+   The first run downloads a small sentence-embedding model from the
+   Hugging Face Hub.
 
-Run with:
-    .venv/bin/python examples/basic_usage.py
+Run from a clone of the repository with:
+    pip install ".[embedding]"
+    python examples/basic_usage.py
 """
 import numpy as np
 

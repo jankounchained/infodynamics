@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 from hypothesis import given, strategies as st
 
-from infodynamics.metrics import _rel_entr, kl_div, js_div, js_dist, cos_sim
+from infodynamics.metrics import js_dist
 from infodynamics import WindowedRollingDistance
 
 
@@ -14,10 +14,10 @@ def test_calc_signal_data_shapes():
     X = np.vstack(
         [
             np.random.uniform(0, 1, size=100),
-            np.random.normal(0, 1, size=100),
-            np.random.normal(0, 1, size=100),
-            np.random.normal(0, 1, size=100),
-            np.random.normal(0, 1, size=100),
+            np.random.uniform(0, 1, size=100),
+            np.random.uniform(0, 1, size=100),
+            np.random.uniform(0, 1, size=100),
+            np.random.uniform(0, 1, size=100),
         ]
     )
 
@@ -89,7 +89,7 @@ def test_validate_input_list_of_lists():
     """ """
     a = [[0.5, 0.5], [0.5, 0.5]]
     i = WindowedRollingDistance(measure=js_dist, window_size=1)
-    X = i._validate_data(a)
+    X = i._as_array(a)
 
     assert isinstance(X, np.ndarray)
     assert X.shape == (2, 2)
@@ -106,7 +106,7 @@ def test_validate_input_list_of_lists():
 )
 def test_validate_data_hypothesis(input_list):
     i = WindowedRollingDistance(measure=js_dist, window_size=1)
-    X = i._validate_data(input_list)
+    X = i._as_array(input_list)
 
     assert isinstance(X, np.ndarray)
     assert X.shape == (len(input_list), len(input_list[0]))
@@ -128,8 +128,8 @@ def test_window_size(data, window_size):
     X = data.draw(
         st.lists(
             st.floats(
-                min_value=0, max_value=1
-            ),  # Generate a random array of input data
+                min_value=0.01, max_value=1
+            ),  # positive values: js_dist compares distributions
             min_size=100,
             max_size=100,
         )
