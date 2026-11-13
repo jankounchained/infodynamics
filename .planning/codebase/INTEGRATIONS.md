@@ -92,8 +92,8 @@
 - `setup.py` reads `README.md` for package long description; no sensitive data
 
 **Data files:**
-- CSV corpus: `260708_radomil_collection.csv` (example data in repo root, pre-committed)
-- Czech UDPipe model: `czech-pdt-ud-2.5-191206.udpipe` (pre-committed; 56 MB)
+- CSV corpus: `corpus.csv` (local example data in the repo root; untracked, never committed)
+- Czech UDPipe model: `czech-pdt-ud-2.5-191206.udpipe` (local file in the repo root; untracked, never committed; 56 MB)
 
 ## Webhooks & Callbacks
 

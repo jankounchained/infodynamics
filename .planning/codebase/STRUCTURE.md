@@ -72,14 +72,14 @@ tests/                                 # Unit and integration tests
 ├── CLAUDE.md                          # Project context (currently empty)
 ├── BRIEF_artifact_backbone.md         # Implementation spec for cache/shipping
 ├── .gitignore                         # Ignores cache/, *.tar.zst, .venv, __pycache__
-├── 260708_radomil_collection.csv      # Corpus data (Czech texts)
+├── corpus.csv                         # Corpus data (Czech texts)
 ├── czech-pdt-ud-2.5-191206.udpipe    # UDPipe model for Czech morphology
 ├── run_multiscale_demo.py             # Single-document analysis demo
 ├── run_morphology_demo.py             # Morphology encoding demo
 ├── run_scalogram_demo.py              # Scalogram/Foote novelty demo
 ├── benchmark_embedding.py             # Model performance benchmark
 ├── descriptors_analysis.py            # Descriptor extraction analysis
-├── radomil_texts_to_csv.py            # Data preparation (texts → corpus CSV)
+├── texts_to_csv.py                    # Data preparation (texts → corpus CSV)
 ├── scalogram_foote_prototype.py       # Early prototype + sentence splitter (shared with build script)
 └── .planning/
     └── codebase/                      # Codebase analysis documents (ARCHITECTURE.md, STRUCTURE.md, etc.)
@@ -116,7 +116,7 @@ tests/                                 # Unit and integration tests
 
 **`[root]` (demo scripts & data):**
 - Purpose: Reproducible examples, data preparation, prototyping
-- Key files: `run_multiscale_demo.py`, `260708_radomil_collection.csv` (corpus), `czech-pdt-ud-2.5-191206.udpipe` (UDPipe model)
+- Key files: `run_multiscale_demo.py`, `corpus.csv` (corpus), `czech-pdt-ud-2.5-191206.udpipe` (UDPipe model)
 
 ## Key File Locations
 

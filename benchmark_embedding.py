@@ -17,7 +17,7 @@ Usage
 -----
     python benchmark_embedding.py --models BAAI/bge-m3 sentence-transformers/all-MiniLM-L6-v2
     python benchmark_embedding.py --models BAAI/bge-m3 --n-texts 500 --device mps
-    python benchmark_embedding.py --models BAAI/bge-m3 --csv 260708_radomil_collection.csv --out results.csv
+    python benchmark_embedding.py --models BAAI/bge-m3 --csv corpus.csv --out results.csv
 """
 import argparse
 import random

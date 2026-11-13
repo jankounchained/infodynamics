@@ -200,7 +200,7 @@ from infodynamics.clustering import SignalClusterer
 from infodynamics.embedding import Encoder
 
 FIXTURE_A = "..."  # inline, ~15-20 sentences, committed in this file — NOT the untracked
-FIXTURE_B = "..."  # 260708_radomil_collection.csv (see Common Pitfalls below)
+FIXTURE_B = "..."  # corpus.csv (see Common Pitfalls below)
 FIXTURE_C = "..."
 
 encoder = Encoder("sentence-transformers/all-MiniLM-L6-v2", device="cpu")  # already cached locally, no network needed
@@ -241,7 +241,7 @@ This is a **new pattern** for this repo (no `tests/golden/`-style precedent curr
 - **Capturing the baseline with `FakeEncoder`-only, deterministic-random embeddings:** Silently defeats Phase 2's reuse of this snapshot to confirm the segmentation/embedding *move* introduced no drift (see Alternatives Considered above). Use a real cached encoder for at least the text-based half of the snapshot.
 - **Editing `setup.py`'s `entry_points` without reinstalling:** Leaves stale shims in `.venv/bin/` and a stale `infodynamics.egg-info/entry_points.txt` — RM-03's actual acceptance test (`pip install -e .` registers no removed script) will silently pass-by-omission if nobody re-runs the install and checks `.venv/bin/`.
 - **Squashing baseline-capture and removal into one commit:** Defeats the explicit bisectability goal in ROADMAP.md's phase-ordering rationale ("subtractive-before-additive... so numerical drift stays bisectable at every step").
-- **Treating the untracked root CSV/UDPipe files as required fixtures:** `260708_radomil_collection.csv` and `czech-pdt-ud-2.5-191206.udpipe` are untracked, and REQUIREMENTS.md explicitly marks "cleanup of untracked root clutter" out of scope this milestone — see Common Pitfalls below for the concrete tradeoff.
+- **Treating the untracked root CSV/UDPipe files as required fixtures:** `corpus.csv` and `czech-pdt-ud-2.5-191206.udpipe` are untracked, and REQUIREMENTS.md explicitly marks "cleanup of untracked root clutter" out of scope this milestone — see Common Pitfalls below for the concrete tradeoff.
 
 ## Don't Hand-Roll
 
@@ -270,7 +270,7 @@ This is a **new pattern** for this repo (no `tests/golden/`-style precedent curr
 ## Common Pitfalls
 
 ### Pitfall 1: Untracked root clutter looks like ready-made fixture data, but isn't safe to depend on
-**What goes wrong:** `260708_radomil_collection.csv` (Czech text corpus) and `czech-pdt-ud-2.5-191206.udpipe` (56MB UDPipe model) sit in the repo root and are exactly the kind of realistic, already-present data a golden-baseline capture script would reach for. `dashboard/build_dashboard_artifacts.py` even has `DEFAULT_CSV = REPO_ROOT / "260708_radomil_collection.csv"` baked in.
+**What goes wrong:** `corpus.csv` (Czech text corpus) and `czech-pdt-ud-2.5-191206.udpipe` (56MB UDPipe model) sit in the repo root and are exactly the kind of realistic, already-present data a golden-baseline capture script would reach for. `dashboard/build_dashboard_artifacts.py` even has `DEFAULT_CSV = REPO_ROOT / "corpus.csv"` baked in.
 **Why it happens:** They're real, substantial, already-on-disk data — the path of least resistance for "2-3 fixed inputs."
 **How to avoid:** Both files are **untracked** (`git status` shows `??`), and REQUIREMENTS.md's Out of Scope table explicitly lists "Cleanup of untracked root clutter... addressed separately, not this milestone (user decision)." Depending on an untracked file for a *checked-in, reproducible* golden baseline is a real tradeoff: anyone who clones the repo fresh (or the CSV/model file gets cleaned up in a future pass) cannot reproduce the baseline capture. **Recommendation:** use small, inline, committed text fixtures (following the exact pattern already in `tests/test_pipeline.py`'s `TEXT`/`MULTISCALE_TEXT` module constants) for the checked-in snapshot inputs, sized for enough sentences (~15-20) that `MultiscaleInfoDynamics`'s default `scales`/`radii` aren't all silently dropped (see Pitfall 2). The CSV/UDPipe files can still be *used* transiently for ad hoc exploration if useful, but should not be a hard dependency of the committed baseline-capture script. Flag this decision explicitly to the user if the planner considers using them anyway.
 
