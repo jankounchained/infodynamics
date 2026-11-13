@@ -32,11 +32,13 @@ by `test_golden_baseline_tolerance_policy()`, which pins
 
 Full investigation: .planning/debug/golden-baseline-ci-drift.md
 """
+import functools
 import json
 import os
 import sys
 
 import numpy as np
+import pytest
 
 try:
     from tests.golden.capture_baseline import ARRAYS_PATH, META_PATH, compute_outputs
@@ -52,7 +54,14 @@ _BASELINE_ARRAYS = np.load(ARRAYS_PATH)
 with open(META_PATH) as _f:
     _BASELINE_META = json.load(_f)
 
-_CURRENT_ARRAYS, _CURRENT_META = compute_outputs()
+
+
+@functools.cache
+def _current():
+    """Recompute the outputs once per session, on first use. Kept lazy so
+    that `pytest -m "not network"` can deselect these tests offline without
+    the encoder download running at import time."""
+    return compute_outputs()
 
 # ORIGINAL tight band (float64-grade). The encoder-independent, seeded-rng
 # WindowedRollingDistance/Scalogram/FooteNovelty arrays and the DTW cluster
@@ -72,30 +81,34 @@ _TRANSFORMER_RTOL = 1e-5
 _TRANSFORMER_ATOL = 1e-6
 
 
+@pytest.mark.network
 def test_text_signals_match_golden_baseline():
+    current_arrays, current_meta = _current()
     for name in ("a", "b", "c"):
         for signal in ("novelty", "transience", "resonance"):
             key = f"{name}_{signal}"
             assert np.allclose(
-                _CURRENT_ARRAYS[key],
+                current_arrays[key],
                 _BASELINE_ARRAYS[key],
                 rtol=_TRANSFORMER_RTOL,
                 atol=_TRANSFORMER_ATOL,
             ), f"{key} has drifted from the golden baseline"
 
 
+@pytest.mark.network
 def test_multiscale_structure_matches_golden_baseline():
+    current_arrays, current_meta = _current()
     for name in ("a", "b", "c"):
         for signal in ("ssm", "scalogram", "novelty"):
             key = f"multiscale_{name}_{signal}"
             assert np.allclose(
-                _CURRENT_ARRAYS[key],
+                current_arrays[key],
                 _BASELINE_ARRAYS[key],
                 rtol=_TRANSFORMER_RTOL,
                 atol=_TRANSFORMER_ATOL,
             ), f"{key} has drifted from the golden baseline"
 
-        current_descriptors = _CURRENT_META["fixtures"][name]["descriptors"]
+        current_descriptors = current_meta["fixtures"][name]["descriptors"]
         baseline_descriptors = _BASELINE_META["fixtures"][name]["descriptors"]
         for descriptor_key, baseline_value in baseline_descriptors.items():
             assert np.allclose(
@@ -106,7 +119,9 @@ def test_multiscale_structure_matches_golden_baseline():
             ), f"descriptor {descriptor_key!r} for fixture {name!r} has drifted"
 
 
+@pytest.mark.network
 def test_pure_numeric_estimators_match_golden_baseline():
+    current_arrays, current_meta = _current()
     for key in (
         "numeric_wrd_N_hat",
         "numeric_wrd_T_hat",
@@ -116,10 +131,10 @@ def test_pure_numeric_estimators_match_golden_baseline():
         "numeric_foote_ssm",
     ):
         assert np.allclose(
-            _CURRENT_ARRAYS[key], _BASELINE_ARRAYS[key], rtol=_NUMERIC_RTOL, atol=_NUMERIC_ATOL
+            current_arrays[key], _BASELINE_ARRAYS[key], rtol=_NUMERIC_RTOL, atol=_NUMERIC_ATOL
         ), f"{key} has drifted from the golden baseline"
 
-    current_descriptors = _CURRENT_META["numeric"]["descriptors"]
+    current_descriptors = current_meta["numeric"]["descriptors"]
     baseline_descriptors = _BASELINE_META["numeric"]["descriptors"]
     for descriptor_key, baseline_value in baseline_descriptors.items():
         assert np.allclose(
@@ -130,14 +145,16 @@ def test_pure_numeric_estimators_match_golden_baseline():
         ), f"numeric descriptor {descriptor_key!r} has drifted"
 
 
+@pytest.mark.network
 def test_cluster_labels_and_barycenters_match_golden_baseline():
-    assert np.array_equal(_CURRENT_ARRAYS["cluster_labels"], _BASELINE_ARRAYS["cluster_labels"])
+    current_arrays, current_meta = _current()
+    assert np.array_equal(current_arrays["cluster_labels"], _BASELINE_ARRAYS["cluster_labels"])
 
     baseline_label_keys = _BASELINE_META["cluster"]["label_keys"]
     for label in baseline_label_keys:
         key = f"cluster_barycenter_{label}"
         assert np.allclose(
-            _CURRENT_ARRAYS[key], _BASELINE_ARRAYS[key], rtol=_NUMERIC_RTOL, atol=_NUMERIC_ATOL
+            current_arrays[key], _BASELINE_ARRAYS[key], rtol=_NUMERIC_RTOL, atol=_NUMERIC_ATOL
         ), f"{key} has drifted from the golden baseline"
 
 
