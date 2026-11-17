@@ -6,6 +6,18 @@ on:
   pull_request:
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - name: Install ruff
+        run: pip install ruff==0.17.5
+      - name: Lint (pyflakes and syntax errors)
+        run: ruff check --select F,E7,E9 .
+
   test:
     runs-on: ubuntu-latest
     steps:
@@ -17,3 +29,17 @@ jobs:
         run: pip install .[test]
       - name: Test
         run: pytest -q
+
+  test-morphology:
+    # The morphology extra (spaCy, UDPipe, textdescriptives) is heavy, so its
+    # tests run in their own job instead of inflating the main test install.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - name: Install
+        run: pip install .[test,morphology]
+      - name: Test
+        run: pytest -q tests/text/test_morphology.py

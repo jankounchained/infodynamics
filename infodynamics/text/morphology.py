@@ -36,15 +36,11 @@ def _clean_feature_df(df):
 
 
 def _load_pipeline(lang: str, feature_group: str, model_path: Optional[str] = None):
+    # Fail early, with an install hint, if the optional extra is missing.
+    # Importing textdescriptives also registers its spaCy factories.
     try:
-        import spacy_udpipe
-    except ImportError as e:
-        raise ImportError(
-            "The 'morphology' extra is required to use MorphologicalEncoder. "
-            "Install it with `pip install infodynamics[morphology]`."
-        ) from e
-    try:
-        import textdescriptives  # noqa: F401  (registers the textdescriptives/* spaCy factories)
+        import spacy_udpipe  # noqa: F401
+        import textdescriptives  # noqa: F401
     except ImportError as e:
         raise ImportError(
             "The 'morphology' extra is required to use MorphologicalEncoder. "

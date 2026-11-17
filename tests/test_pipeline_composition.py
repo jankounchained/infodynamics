@@ -124,6 +124,7 @@ def test_pipeline_set_params_takes_effect():
     assert isinstance(result, np.ndarray)
 
 
+@pytest.mark.network
 def test_pipeline_with_real_encoder():
     """The literal criterion-4 form named in ROADMAP.md: Pipeline([("segment",
     TextSegmenter()), ("encode", Encoder()), ("analyze",

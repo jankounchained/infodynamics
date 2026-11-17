@@ -1,4 +1,4 @@
-__version__ = "0.1.0"
+__version__ = "0.5.0"
 
 from infodynamics.clustering import SignalClusterer
 from infodynamics.pipeline import InfoDynamics, MultiscaleInfoDynamics

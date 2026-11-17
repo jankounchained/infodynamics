@@ -101,7 +101,7 @@ class SignalClusterer(BaseEstimator, ClusterMixin):
 
         barycenters = {
             int(label): barycenter_average(
-                [s for s, l in zip(series, labels) if l == label],
+                [s for s, s_label in zip(series, labels) if s_label == label],
                 method=self.barycenter_method,
             )
             for label in np.unique(labels)

@@ -8,7 +8,7 @@ _test*
 
 # From https://raw.githubusercontent.com/github/gitignore/main/Python.gitignore
 
- Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -172,3 +172,6 @@ cython_debug/
 
 # macos
 .DS_Store
+# Local planning notes for the AI-assisted workflow. The v0.5 notes are kept
+# in history at commit 619e659 and linked from the README.
+.planning/
