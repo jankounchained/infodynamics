@@ -1,29 +1,20 @@
-<!-- DRAFT: Jan to edit before merge. -->
-
 # infodynamics
 
 [![CI](https://github.com/jankounchained/infodynamics/actions/workflows/ci.yml/badge.svg)](https://github.com/jankounchained/infodynamics/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-`infodynamics` measures how much a sequence changes over time. It takes any
-numeric time series, one vector per step, and returns a signal for each
-step. The signal shows where something new begins, where something ends,
-and whether a change lasts. It follows the scikit-learn estimator API, so it
-composes with `Pipeline`. A separate text module turns documents into such
-a series, one sentence embedding per step.
+`infodynamics` detects novelty in time series. Given a sequence of vectors, one per step, it scores each step against the steps around it: how far it is from the recent past, how far from what follows, and whether that change persists or fades. Multi-scale tools extend this across window sizes to find boundaries and recurring structure. It follows the scikit-learn estimator API, so it composes with Pipeline. A separate text embedding module turns documents into such a series, one sentence embedding per step.
 
 For each step, with a window of `w` neighbouring steps:
 
 - **Novelty**: how different the step is from the `w` steps before it.
 - **Transience**: how different the step is from the `w` steps after it.
 - **Resonance**: novelty minus transience. A change that persists scores
-  high; a one-off blip scores near zero.
+  high (non-persistent steps score near zero).
 
 There are also multi-scale views: a scalogram (the same distance at several
 window sizes), a self-similarity matrix, Foote novelty for boundary
 detection, and clustering of whole signals by shape.
-
-<!-- TODO(D6): figure from a public-domain text, plus the committed script that regenerates it. -->
 
 ## Status
 
@@ -93,12 +84,8 @@ multi-scale estimator and a full `sklearn.pipeline.Pipeline`
 - **A numeric core that knows nothing about text.** `infodynamics` takes
   arrays and returns arrays. It works the same on sentence embeddings,
   sensor readings or anything else with one vector per step.
-- **Text is a separate on-ramp.** `infodynamics.text` segments documents
-  and embeds the pieces, then hands the core an array.
-- **Heavy dependencies are optional extras.** The core installs numpy,
-  scikit-learn, matplotlib and two small packages (syntok,
-  typing-extensions). Using a feature whose extra is missing raises an
-  `ImportError` that names the extra to install.
+- **Tools for processing text (or images or audio in the future) are in a separate submodule.** `infodynamics.text` segments documents
+  and embeds the pieces, then hands the core module an array. This also makes heavy dependencies optional extras. The core installs a couple of small packages.
 - **Estimators are stateless.** Nothing is learned in `fit`. `transform`
   recomputes from the data it is given, because each signal describes one
   sequence, not a model that generalises to new data.
@@ -116,18 +103,6 @@ The plans, research notes and verification reports from that work are
 kept at the commit that completed it, in
 [`.planning/`](https://github.com/jankounchained/infodynamics/tree/619e659/.planning).
 
-- **No numerical output was allowed to change.** Before the refactor
-  started, golden-baseline outputs were captured
-  ([`tests/test_golden_baseline.py`](tests/test_golden_baseline.py)). Every
-  later step had to reproduce them.
-- **When that check failed on Linux CI, the cause was traced.** float32
-  summation order differs between the macOS and Linux BLAS libraries. The
-  diagnosis is written up in
-  [`golden-baseline-ci-drift.md`](https://github.com/jankounchained/infodynamics/blob/619e659/.planning/debug/golden-baseline-ci-drift.md).
-- **The resulting tolerance policy is pinned by its own test**
-  (`test_golden_baseline_tolerance_policy`). Float64 paths keep a tight
-  band. Only transformer-derived float32 signals get a looser one.
-
 ## Tests
 
 ```bash
@@ -141,10 +116,32 @@ with the `morphology` extra).
 
 ## Where the method comes from
 
-<!-- TODO(D6): references for novelty/transience/resonance and the other methods. -->
+Novelty, transience and resonance come from information theory. Barron et
+al. (2018) defined them to track how new ideas spread through speeches in
+the French Revolution's National Constituent Assembly. Each speech was a
+topic distribution, and the distance between two steps was the
+Kullback–Leibler divergence, the extra information needed to describe one
+distribution in terms of another. For a window of `w` steps:
 
-Signal clustering follows Wevers, Kostkan & Nielbo (2021), "Event Flow".
-<!-- TODO(D6): full reference. -->
+$$
+\begin{aligned}
+N_w(i) &= \frac{1}{w}\sum_{d=1}^{w} D(x_i \,\|\, x_{i-d}) \\
+T_w(i) &= \frac{1}{w}\sum_{d=1}^{w} D(x_i \,\|\, x_{i+d}) \\
+R_w(i) &= N_w(i) - T_w(i)
+\end{aligned}
+$$
+
+`infodynamics` keeps this structure but lets `D` be any distance/divergence metric. KL
+(`measure="kld"`) and Jensen–Shannon (`"jsd"`, `"jensenshannon"`) need
+non-negative vectors, such as probability distributions. The default,
+cosine distance, works on unconstrained vectors such as sentence
+embeddings. 
+
+- Barron, A. T. J., Huang, J., Spang, R. L., & DeDeo, S. (2018). Individuals, institutions, and innovation in the debates of the French Revolution. *Proceedings of the National Academy of Sciences*, 115(18), 4607–4612. https://doi.org/10.1073/pnas.1717729115
+- Wevers, M., Kostkan, J., & Nielbo, K. L. (2021). Event Flow – How Events Shaped the Flow of the News, 1950–1995. In *Proceedings of the Computational Humanities Research Conference 2021 (CHR 2021)*, Amsterdam, CEUR Workshop Proceedings, vol. 2989, pp. 62–76. https://ceur-ws.org/Vol-2989/long_paper16.pdf
+- Lassche, A., Kostkan, J., & Nielbo, K. L. (2022). Chronicling Crises: Event Detection in Early Modern Chronicles from the Low Countries. In *Proceedings of the Computational Humanities Research Conference 2022 (CHR 2022)*, Antwerp, CEUR Workshop Proceedings, vol. 3290, pp. 215–230. https://ceur-ws.org/Vol-3290/short_paper4697.pdf
+- Nielbo, K. L., Kostkan, J., & Wevers, M. (2023). Embed, Detect and Describe (EDDe): A Framework for Examining Events in Complex Sociocultural and Historical Data. *DHNB 2023*, Oslo. https://pure.au.dk/portal/en/publications/embed-detect-and-describe-edde-a-framework-for-examining-events-i/
+- Nielbo, K. L., Kostkan, J., Baunvig, K. F., Borisova, E., & Geertz, A. W. (2023). Oscillation between Contemplation and Revelation – Recurrence and Change in the Life History of Teresa of Ávila. In *Proceedings of the Computational Humanities Research Conference 2023 (CHR 2023)*, Paris, CEUR Workshop Proceedings, vol. 3558, pp. 715–733. https://ceur-ws.org/Vol-3558/paper8108.pdf
 
 ## Licence
 
